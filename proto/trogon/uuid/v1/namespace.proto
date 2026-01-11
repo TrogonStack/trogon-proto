@@ -1,0 +1,21 @@
+syntax = "proto3";
+package trogon.uuid.v1;
+
+// Namespace defines the namespace for UUIDv5 generation.
+message Namespace {
+  oneof value {
+    // Use a UUID string directly as the namespace.
+    // Example: "550e8400-e29b-41d4-a716-446655440000"
+    string uuid = 1;
+
+    // Use a domain name, hashed with the well-known DNS namespace.
+    // Well-known DNS namespace: 6ba7b810-9dad-11d1-80b4-00c04fd430c8
+    // Example: "inventory.acme.com"
+    string dns = 2;
+
+    // Use a URL, hashed with the well-known URL namespace.
+    // Well-known URL namespace: 6ba7b811-9dad-11d1-80b4-00c04fd430c8
+    // Example: "https://acme.com/inventory/sku"
+    string url = 3;
+  }
+}
