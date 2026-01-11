@@ -22,7 +22,7 @@ jobs:
           types: |
             fix
             chore
-            bug
+            feat
           requireScope: false
           disallowScopes: ""
           subjectPattern: ^(?![A-Z]).+$
