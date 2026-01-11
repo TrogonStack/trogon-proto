@@ -1,0 +1,25 @@
+syntax = "proto3";
+package trogon.uuid.v1;
+
+// Uuid represents a universally unique identifier.
+//
+// Use this message type instead of raw strings for type-safe UUID fields.
+// The version can be extracted from character 15 (0-indexed: 14) of the value.
+//
+// Example usage:
+//
+//   import "trogon/uuid/v1/uuid.proto";
+//
+//   message Order {
+//     trogon.uuid.v1.Uuid id = 1;
+//     string customer_name = 2;
+//   }
+//
+message Uuid {
+  // The UUID in canonical string format with lowercase hex and dashes.
+  // Example: "550e8400-e29b-41d4-a716-446655440000"
+  //
+  // Format: xxxxxxxx-xxxx-Vxxx-xxxx-xxxxxxxxxxxx
+  // Where V (character 15) indicates the version: 1, 3, 4, 5, 7, etc.
+  string value = 1;
+}

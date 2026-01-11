@@ -1,0 +1,17 @@
+version: v2
+
+modules:
+  - path: .
+    name: buf.build/trogonstack/trogon-proto
+
+deps:
+  - buf.build/protocolbuffers/wellknowntypes
+
+lint:
+  use:
+    - STANDARD
+  disallow_comment_ignores: true
+
+breaking:
+  use:
+    - FILE

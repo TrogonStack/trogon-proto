@@ -1,0 +1,89 @@
+syntax = "proto3";
+package trogon.uuid.v1;
+
+import "google/protobuf/descriptor.proto";
+
+// UuidFormat defines the UUID generation parameters for identity versioning.
+// This option can be attached to enum values to specify how UUIDs are generated.
+message UuidFormat {
+  // The root UUID namespace for this specific version.
+  // If set, overrides enum_uuid_namespace and root_uuid_namespace.
+  // Use this when a version needs a different root (e.g., after migration).
+  optional string root_namespace = 1;
+
+  // The sub-namespace identifier for UUIDv5 generation.
+  // This string is hashed with the root namespace to derive
+  // the final namespace UUID. Use reverse-domain notation.
+  // Example: "acme.inventory.sku.v1"
+  string namespace = 2;
+
+  // The template string for generating the UUID input value.
+  // Supports placeholders that map to field names in your request message.
+  // Example: "warehouse/{warehouse_id}/sku/{sku_code}"
+  string template = 3;
+}
+
+extend google.protobuf.FileOptions {
+  // root_uuid_namespace defines the default root UUID namespace for the file.
+  // Used as fallback when an enum doesn't specify its own root namespace.
+  //
+  // Example:
+  //   option (trogon.uuid.v1.root_uuid_namespace) = "550e8400-e29b-41d4-a716-446655440000";
+  //
+  optional string root_uuid_namespace = 50001;
+}
+
+extend google.protobuf.EnumOptions {
+  // enum_uuid_namespace defines the root UUID namespace for a specific enum.
+  // Takes precedence over the file-level root_uuid_namespace.
+  // Use this when different enums need different root namespaces.
+  //
+  // Example:
+  //   enum SkuIdentityVersion {
+  //     option (trogon.uuid.v1.enum_uuid_namespace) = "550e8400-e29b-41d4-a716-446655440000";
+  //     SKU_IDENTITY_VERSION_UNSPECIFIED = 0;
+  //     // ...
+  //   }
+  //
+  optional string enum_uuid_namespace = 50002;
+}
+
+extend google.protobuf.EnumValueOptions {
+  // uuid_format specifies the UUID generation parameters for an identity version.
+  //
+  // Resolution order for root namespace:
+  //   1. uuid_format.root_namespace (if set on the enum value)
+  //   2. enum_uuid_namespace (if set on the enum)
+  //   3. root_uuid_namespace (file-level fallback)
+  //   4. Error if none are set
+  //
+  // Example usage for ACME Corp's inventory system:
+  //
+  //   // acme/inventory/v1/sku.proto
+  //   syntax = "proto3";
+  //   package acme.inventory.v1;
+  //
+  //   import "trogon/uuid/v1/options.proto";
+  //
+  //   // File-level default
+  //   option (trogon.uuid.v1.root_uuid_namespace) = "550e8400-e29b-41d4-a716-446655440000";
+  //
+  //   enum SkuIdentityVersion {
+  //     SKU_IDENTITY_VERSION_UNSPECIFIED = 0;
+  //
+  //     // V1: Uses file-level root namespace
+  //     SKU_IDENTITY_VERSION_V1 = 1 [(trogon.uuid.v1.uuid_format) = {
+  //       namespace: "acme.inventory.sku.v1",
+  //       template: "warehouse/{warehouse_id}/sku/{sku_code}"
+  //     }];
+  //
+  //     // V2: After org restructure, uses new root namespace
+  //     SKU_IDENTITY_VERSION_V2 = 2 [(trogon.uuid.v1.uuid_format) = {
+  //       root_namespace: "7c9e6679-7425-40de-944b-e07fc1f90ae7",  // new root!
+  //       namespace: "acme.inventory.sku.v2",
+  //       template: "region/{region}/warehouse/{warehouse_id}/sku/{sku_code}"
+  //     }];
+  //   }
+  //
+  optional UuidFormat uuid_format = 50000;
+}
