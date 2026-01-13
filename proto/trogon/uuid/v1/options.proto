@@ -5,7 +5,7 @@ import "elixirpb.proto";
 import "google/protobuf/descriptor.proto";
 import "trogon/uuid/v1/namespace.proto";
 
-option (elixirpb.file).module_prefix = "TrogonProto";
+option (elixirpb.file).module_prefix = "TrogonProto.Uuid.V1";
 
 // FileOptions defines file-level options for UUID generation.
 message FileOptions {
