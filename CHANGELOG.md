@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/TrogonStack/trogon-proto/compare/v0.2.0...v0.2.1) (2026-01-13)
+
+
+### Bug Fixes
+
+* Elixir namespacing ([#13](https://github.com/TrogonStack/trogon-proto/issues/13)) ([aefea4b](https://github.com/TrogonStack/trogon-proto/commit/aefea4b8eff71be9d652957911137aadaf0eb647))
+
 ## [0.2.0](https://github.com/TrogonStack/trogon-proto/compare/v0.1.0...v0.2.0) (2026-01-13)
 
 
