@@ -11,7 +11,11 @@ lint:
   use:
     - STANDARD
   disallow_comment_ignores: true
+  ignore:
+    - proto/elixirpb.proto
 
 breaking:
   use:
     - FILE
+  ignore:
+    - proto/elixirpb.proto
