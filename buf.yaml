@@ -5,17 +5,14 @@ modules:
     name: buf.build/trogonstack/trogon-proto
 
 deps:
+  - buf.build/elixir-protobuf/protobuf
   - buf.build/protocolbuffers/wellknowntypes
 
 lint:
   use:
     - STANDARD
   disallow_comment_ignores: true
-  ignore:
-    - proto/elixirpb.proto
 
 breaking:
   use:
     - FILE
-  ignore:
-    - proto/elixirpb.proto
