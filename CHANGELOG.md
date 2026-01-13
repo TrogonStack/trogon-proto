@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/TrogonStack/trogon-proto/compare/v0.1.0...v0.2.0) (2026-01-13)
+
+
+### Features
+
+* Add Elixir module prefix to proto files ([#11](https://github.com/TrogonStack/trogon-proto/issues/11)) ([678a995](https://github.com/TrogonStack/trogon-proto/commit/678a995df341b1e485ac0fe51d326ea59fc047f2))
+
 ## [0.1.0](https://github.com/TrogonStack/trogon-proto/compare/v0.1.0...v0.1.0) (2026-01-11)
 
 
