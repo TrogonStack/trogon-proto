@@ -1,8 +1,11 @@
 syntax = "proto3";
 package trogon.uuid.v1;
 
+import "elixirpb.proto";
 import "google/protobuf/descriptor.proto";
 import "trogon/uuid/v1/namespace.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto";
 
 // FileOptions defines file-level options for UUID generation.
 message FileOptions {
