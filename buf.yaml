@@ -5,6 +5,7 @@ modules:
     name: buf.build/trogonstack/trogon-proto
 
 deps:
+  - buf.build/elixir-protobuf/protobuf
   - buf.build/protocolbuffers/wellknowntypes
 
 lint:

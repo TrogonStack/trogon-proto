@@ -16,4 +16,3 @@ Add to your `buf.yaml`:
 deps:
   - buf.build/trogonstack/trogon-proto
 ```
-

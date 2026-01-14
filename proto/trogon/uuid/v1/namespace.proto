@@ -1,6 +1,10 @@
 syntax = "proto3";
 package trogon.uuid.v1;
 
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Uuid.V1";
+
 // Namespace defines the namespace for UUIDv5 generation.
 message Namespace {
   oneof value {
