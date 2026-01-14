@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/TrogonStack/trogon-proto/compare/v0.2.1...v0.2.2) (2026-01-14)
+
+
+### Bug Fixes
+
+* Use elixir-protobuf from bsr ([#16](https://github.com/TrogonStack/trogon-proto/issues/16)) ([f6ad8a9](https://github.com/TrogonStack/trogon-proto/commit/f6ad8a93a6bd163b87c483f767550543758bd606))
+
 ## [0.2.1](https://github.com/TrogonStack/trogon-proto/compare/v0.2.0...v0.2.1) (2026-01-13)
 
 
