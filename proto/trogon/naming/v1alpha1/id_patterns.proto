@@ -1,0 +1,110 @@
+syntax = "proto3";
+package trogon.naming.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/descriptor.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Naming.V1Alpha1";
+
+// IDPrefix defines all available ID prefixes for domain entities.
+// Each prefix is a standardized identifier prefix used across the system.
+enum IDPrefix {
+  ID_PREFIX_UNSPECIFIED = 0;
+
+  // USER: User entity identifier
+  ID_PREFIX_USER = 1 [(trogon.naming.v1alpha1.prefix_value) = "user_"];
+
+  // ACCOUNT: Account entity identifier
+  ID_PREFIX_ACCOUNT = 2 [(trogon.naming.v1alpha1.prefix_value) = "acc_"];
+
+  // TRANSACTION: Transaction entity identifier
+  ID_PREFIX_TRANSACTION = 3 [(trogon.naming.v1alpha1.prefix_value) = "txn_"];
+}
+
+// FormatType specifies how to handle the prefix in storage/encoding.
+enum FormatType {
+  FORMAT_TYPE_UNSPECIFIED = 0;
+
+  // FULL: Include the prefix in the value (e.g., "user_abc-123")
+  FORMAT_TYPE_FULL = 1;
+
+  // DROP_PREFIX: Omit the prefix, store only the ID part (e.g., "abc-123")
+  FORMAT_TYPE_DROP_PREFIX = 2;
+}
+
+// Format defines a named format configuration for ID serialization.
+message Format {
+  // Name of the format (e.g., "default", "api", "storage")
+  string name = 1;
+
+  // How to handle the prefix in this format
+  FormatType type = 2;
+}
+
+// Attach the string value and format configs to enum values.
+extend google.protobuf.EnumValueOptions {
+  optional string prefix_value = 870012;
+  repeated Format formats = 870013;
+}
+
+// IDPatternOption documents an ID field with its prefix and format.
+message IDPatternOption {
+  // Which prefix to use for this ID field.
+  IDPrefix prefix = 1;
+
+  // Human-readable description of what this ID represents.
+  // Example: "Unique user identifier"
+  string description = 2;
+
+  // Example value showing the full format.
+  // Example: "user_9f86d081884c7d6d9f60d4f7c0d9c5d3"
+  string example = 3;
+
+  // Additional metadata for documentation and queries.
+  // Examples:
+  //   "format" → "uuid"
+  //   "case" → "lowercase"
+  //   "team" → "user-service"
+  map<string, string> tags = 4;
+}
+
+// FieldOptions wraps ID pattern documentation for a field.
+// This follows the wrapper pattern to avoid symbol conflicts.
+message FieldOptions {
+  optional IDPatternOption id_pattern = 1;
+}
+
+// Extend google.protobuf.FieldOptions to attach ID pattern
+// documentation to fields.
+//
+// Usage Example:
+//
+//   import "trogon/naming/v1alpha1/id_patterns.proto";
+//
+//   enum IDPrefix {
+//     ID_PREFIX_USER = 1 [
+//       (trogon.naming.v1alpha1.prefix_value) = "user_",
+//       (trogon.naming.v1alpha1.formats) = [
+//         {name: "default", type: FORMAT_TYPE_FULL},
+//         {name: "api", type: FORMAT_TYPE_DROP_PREFIX}
+//       ]
+//     ];
+//   }
+//
+//   message User {
+//     string id = 1 [
+//       (trogon.naming.v1alpha1.field).id_pattern.prefix = ID_PREFIX_USER,
+//       (trogon.naming.v1alpha1.field).id_pattern.description = "Unique user identifier",
+//       (trogon.naming.v1alpha1.field).id_pattern.example = "user_9f86d081884c7d6d9f60d4f7c0d9c5d3"
+//     ];
+//
+//     string account_id = 2 [
+//       (trogon.naming.v1alpha1.field).id_pattern.prefix = ID_PREFIX_ACCOUNT,
+//       (trogon.naming.v1alpha1.field).id_pattern.description = "Associated account",
+//       (trogon.naming.v1alpha1.field).id_pattern.example = "acc_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+//     ];
+//   }
+//
+extend google.protobuf.FieldOptions {
+  optional FieldOptions field = 870011;
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+package trogon.env.v1alpha1;
+
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Env.V1Alpha1";
+
+// Visibility indicates whether an environment variable value should be
+// masked/hidden in documentation and logs.
+// Default (unspecified) is treated as SECRET for safety.
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0;
+
+  // PLAINTEXT: Can be displayed in plaintext in documentation and logs.
+  // Example: URLs, port numbers, feature flags, non-sensitive configuration
+  VISIBILITY_PLAINTEXT = 1;
+
+  // SECRET: Should be masked/hidden in documentation and logs.
+  // Example: API keys, passwords, tokens, credentials
+  VISIBILITY_SECRET = 2;
+}

@@ -1,0 +1,147 @@
+syntax = "proto3";
+package trogon.errors.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/descriptor.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Errors.V1Alpha1";
+
+// Standard RPC error codes (Google RPC compatible)
+enum RpcCode {
+  RPC_CODE_UNSPECIFIED = 0;
+  RPC_CODE_CANCELLED = 1;
+  RPC_CODE_UNKNOWN = 2;
+  RPC_CODE_INVALID_ARGUMENT = 3;
+  RPC_CODE_DEADLINE_EXCEEDED = 4;
+  RPC_CODE_NOT_FOUND = 5;
+  RPC_CODE_ALREADY_EXISTS = 6;
+  RPC_CODE_PERMISSION_DENIED = 7;
+  RPC_CODE_RESOURCE_EXHAUSTED = 8;
+  RPC_CODE_FAILED_PRECONDITION = 9;
+  RPC_CODE_ABORTED = 10;
+  RPC_CODE_OUT_OF_RANGE = 11;
+  RPC_CODE_UNIMPLEMENTED = 12;
+  RPC_CODE_INTERNAL = 13;
+  RPC_CODE_UNAVAILABLE = 14;
+  RPC_CODE_DATA_LOSS = 15;
+  RPC_CODE_UNAUTHENTICATED = 16;
+}
+
+// Visibility level for error information
+enum ErrorVisibility {
+  ERROR_VISIBILITY_UNSPECIFIED = 0;
+
+  // Not visible from outside the application
+  ERROR_VISIBILITY_INTERNAL = 1;
+
+  // Visible from applications belonging to the same organization
+  ERROR_VISIBILITY_PRIVATE = 2;
+
+  // Visible to end users
+  ERROR_VISIBILITY_PUBLIC = 3;
+}
+
+// Semantic field types
+enum FieldType {
+  FIELD_TYPE_UNSPECIFIED = 0;
+  FIELD_TYPE_STRING = 1;
+  FIELD_TYPE_UUID = 2;
+  FIELD_TYPE_INTEGER = 3;
+  FIELD_TYPE_BOOLEAN = 4;
+  FIELD_TYPE_TIMESTAMP = 5;
+  FIELD_TYPE_JSON = 6;
+  FIELD_TYPE_URL = 7;
+  FIELD_TYPE_EMAIL = 8;
+}
+
+// JSON Schema validation constraints
+message JsonSchema {
+  // Base type: "string", "object", "array", "number", "integer", "boolean"
+  string type = 1;
+
+  // String validation
+  string pattern = 2;
+  int32 min_length = 3;
+  int32 max_length = 4;
+  string format = 5; // "email", "uuid", "date-time", "uri", etc.
+
+  // Numeric validation
+  int32 minimum = 6;
+  int32 maximum = 7;
+
+  // Enum validation
+  repeated string enum_values = 8;
+
+  // Object/array properties
+  map<string, JsonSchema> properties = 9;
+  repeated string required_properties = 10;
+
+  // Examples and defaults
+  string example = 11;
+  string default_value = 12;
+
+  // Additional constraints
+  string description = 13;
+}
+
+// Example of when/how this error occurs
+message Example {
+  string title = 1;
+  string description = 2;
+  string code_snippet = 3;
+}
+
+// Help and documentation links
+message HelpLink {
+  string title = 1;
+  string url = 2;
+  string type = 3; // "documentation", "runbook", "issue", "guide", etc.
+}
+
+// Field-level documentation for error message fields
+message FieldDocumentation {
+  string description = 1;
+  ErrorVisibility visibility = 2;
+  string example = 3;
+  FieldType type = 4;
+  JsonSchema json_schema = 5;
+  map<string, string> tags = 6;
+}
+
+// Extend google.protobuf.FieldOptions to document error fields
+extend google.protobuf.FieldOptions {
+  optional FieldDocumentation error_field = 870021;
+}
+
+// Complete error definition and documentation
+message ErrorDefinition {
+  // Identity
+  string domain = 1; // e.g., "com.acme.auction"
+  string reason = 2; // e.g., "already_initiated"
+  RpcCode rpc_code = 3;
+
+  // User-facing message
+  string message = 4;
+  ErrorVisibility visibility = 5;
+
+  // Documentation
+  string short_description = 6; // One sentence
+  string long_description = 7; // Detailed explanation
+
+  // Context
+  repeated string causes = 8; // Why this happens
+  repeated string recovery_steps = 9; // How to fix
+  repeated Example examples = 10; // When/where
+  repeated string related_errors = 11; // Similar errors
+
+  // Help
+  repeated HelpLink help_links = 12;
+
+  // Metadata
+  map<string, string> tags = 13; // team, breaking_change_version, etc.
+}
+
+// Extend google.protobuf.MessageOptions to attach error definition
+extend google.protobuf.MessageOptions {
+  optional ErrorDefinition error = 870022;
+}

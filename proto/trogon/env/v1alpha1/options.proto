@@ -1,0 +1,81 @@
+syntax = "proto3";
+package trogon.env.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/descriptor.proto";
+import "trogon/env/v1alpha1/visibility.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Env.V1Alpha1";
+
+// EnvVarOption documents an environment variable field with description,
+// visibility (plaintext or secret), default value, and freeform tags for additional metadata.
+message EnvVarOption {
+  // Human-readable description of what this environment variable is used for.
+  // Example: "ACME API key for payment processing"
+  string description = 1;
+
+  // Whether this environment variable should be displayed in plaintext or masked.
+  Visibility visibility = 2;
+
+  // Default value if the environment variable is not set.
+  // If empty string, the environment variable is required.
+  // Example: "5432" for database port, "" for required API keys
+  string default_value = 3;
+
+  // Additional freeform tags for documentation and queries.
+  // Examples:
+  //   "team" → "payments"
+  //   "pci-dss" → "true"
+  //   "rotation_policy" → "every-90-days"
+  //   "required" → "true"
+  //   "doc-url" → "https://wiki.acme.local/stripe-setup"
+  map<string, string> tags = 4;
+}
+
+// FieldOptions wraps environment variable documentation for a field.
+// This follows the wrapper pattern to avoid symbol conflicts.
+message FieldOptions {
+  optional EnvVarOption env_var = 1;
+}
+
+// Extend google.protobuf.FieldOptions to attach environment variable
+// documentation to fields.
+//
+// Usage Example:
+//
+//   import "trogon/env/v1alpha1/options.proto";
+//
+//   message AppConfig {
+//     string api_key = 1 [
+//       (trogon.env.v1alpha1.field).env_var.description = "ACME API key",
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "",
+//       (trogon.env.v1alpha1.field).env_var.tags = {
+//         key: "team", value: "payments",
+//         key: "pci-dss", value: "true",
+//         key: "rotation_policy", value: "every-180-days"
+//       }
+//     ];
+//
+//     string database_port = 2 [
+//       (trogon.env.v1alpha1.field).env_var.description = "Database port",
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "5432",
+//       (trogon.env.v1alpha1.field).env_var.tags = {
+//         key: "team", value: "data-engineering"
+//       }
+//     ];
+//
+//     string webhook_url = 3 [
+//       (trogon.env.v1alpha1.field).env_var.description = "Webhook endpoint URL",
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "https://example.com/webhook",
+//       (trogon.env.v1alpha1.field).env_var.tags = {
+//         key: "team", value: "devops"
+//       }
+//     ];
+//   }
+//
+extend google.protobuf.FieldOptions {
+  optional FieldOptions field = 870010;
+}
