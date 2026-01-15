@@ -1,0 +1,123 @@
+syntax = "proto3";
+package trogon.env.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/descriptor.proto";
+import "trogon/env/v1alpha1/visibility.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Env.V1Alpha1";
+
+// EnvVarOption captures metadata about an environment variable field.
+// Used to document and validate environment configuration across services.
+//
+// The field's proto comment serves as the human-readable description.
+// Example:
+//   // Database connection string
+//   string database_url = 1 [
+//     (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET,
+//     (trogon.env.v1alpha1.field).env_var.default_value = "",
+//     (trogon.env.v1alpha1.field).env_var.tags = {
+//       key: "team", value: "data-engineering"
+//     }
+//   ];
+message EnvVarOption {
+  // visibility controls whether this value should be masked in docs/logs.
+  // Determines if the value can be displayed in plaintext (.env examples,
+  // generated documentation, logs) or must be masked for security.
+  //
+  // VISIBILITY_SECRET: value will be shown as "***SECRET***" in docs/logs
+  // VISIBILITY_PLAINTEXT: value can be shown in plaintext
+  Visibility visibility = 1;
+
+  // default_value specifies what to use if the environment variable is not set.
+  //
+  // Empty string ("") means the field is REQUIRED - load! will fail if not set.
+  // Any other value means the field is OPTIONAL - that value is used as fallback.
+  //
+  // Examples:
+  //   default_value = ""           // REQUIRED
+  //   default_value = "5432"       // OPTIONAL, defaults to 5432
+  //   default_value = "false"      // OPTIONAL, defaults to false
+  //   default_value = "{}"         // OPTIONAL, defaults to empty JSON
+  string default_value = 2;
+
+  // tags are arbitrary key-value pairs for additional metadata.
+  // Used for compliance, ownership, validation rules, and custom tooling.
+  //
+  // Standard tag keys (not enforced, but recommended):
+  //   "team" → service or team that owns this variable
+  //   "rotation_policy" → secret rotation cadence (e.g., "every-90-days")
+  //   "pci-dss" → "true" if PCI-DSS compliance required
+  //   "validation" → validation rule (e.g., "starts_with:sk_", "url", "integer")
+  //   "type" → data type if not string (e.g., "integer", "json", "csv")
+  //   "env" → environment filter (e.g., "prod_only", "dev_optional")
+  //
+  // Code generators and tooling can use tags to influence behavior:
+  // - Validation rules can be extracted and enforced
+  // - Documentation can be enhanced with compliance metadata
+  // - Load functions can apply type casting (string → integer, etc.)
+  map<string, string> tags = 3;
+}
+
+// FieldOptions wraps environment variable metadata.
+// This wrapper pattern allows attaching environment variable metadata
+// to protobuf fields without symbol conflicts (multiple extensions can
+// define different message types without collision).
+//
+// Use with google.protobuf.FieldOptions extension (see below).
+message FieldOptions {
+  optional EnvVarOption env_var = 1;
+}
+
+// field extends google.protobuf.FieldOptions to attach environment
+// variable metadata to message fields.
+//
+// Attach environment variable documentation to any field in your proto:
+//
+//   syntax = "proto3";
+//   package myapp.config.v1;
+//   import "trogon/env/v1alpha1/options.proto";
+//
+//   message AppConfig {
+//     // Stripe live API key for payment processing
+//     string stripe_api_key = 1 [
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "",
+//       (trogon.env.v1alpha1.field).env_var.tags = {
+//         key: "team", value: "payments",
+//         key: "pci-dss", value: "true",
+//         key: "rotation_policy", value: "every-180-days"
+//       }
+//     ];
+//
+//     // Database connection port
+//     string db_port = 2 [
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "5432",
+//       (trogon.env.v1alpha1.field).env_var.tags = {
+//         key: "team", value: "data-engineering",
+//         key: "type", value: "integer"
+//       }
+//     ];
+//
+//     // Webhook endpoint for async events
+//     string webhook_url = 3 [
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "https://example.com/webhooks",
+//       (trogon.env.v1alpha1.field).env_var.tags = {
+//         key: "team", value: "platform"
+//       }
+//     ];
+//   }
+//
+// Code generators (Elixir, Go, Python, etc.) read this metadata to:
+// - Load values from System environment variables (e.g., STRIPE_API_KEY)
+// - Validate required vs optional fields
+// - Generate documentation and .env examples
+// - Apply type casting based on tags
+// - Mask secrets in logs based on visibility
+// - Track compliance metadata (PCI-DSS, rotation policies, etc.)
+//
+extend google.protobuf.FieldOptions {
+  optional FieldOptions field = 870003;
+}
