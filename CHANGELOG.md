@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/TrogonStack/trogon-proto/compare/v0.2.0...v0.3.0) (2026-01-27)
+
+
+### Features
+
+* Add env protos ([#19](https://github.com/TrogonStack/trogon-proto/issues/19)) ([b525438](https://github.com/TrogonStack/trogon-proto/commit/b525438c5d6e7abf43b1813a76b9bd035dde60c6))
+
 ## [0.2.0](https://github.com/TrogonStack/trogon-proto/compare/v0.1.0...v0.2.0) (2026-01-14)
 
 
