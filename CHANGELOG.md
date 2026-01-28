@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/TrogonStack/trogon-proto/compare/v0.3.0...v0.4.0) (2026-01-28)
+
+
+### Features
+
+* Add support for repeated field types in EnvVarOption ([#21](https://github.com/TrogonStack/trogon-proto/issues/21)) ([374222c](https://github.com/TrogonStack/trogon-proto/commit/374222c89eb4527fa8f1673a9597d9d4d6eda260))
+
 ## [0.3.0](https://github.com/TrogonStack/trogon-proto/compare/v0.2.0...v0.3.0) (2026-01-27)
 
 
