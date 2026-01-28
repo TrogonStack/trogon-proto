@@ -3,59 +3,70 @@ package trogon.env.v1alpha1;
 
 import "elixirpb.proto";
 import "google/protobuf/descriptor.proto";
+import "google/protobuf/empty.proto";
 import "trogon/env/v1alpha1/visibility.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Env.V1Alpha1";
 
-// EnvVarOption captures metadata about an environment variable field.
-// Used to document and validate environment configuration across services.
+// Trim specifies how to remove leading and trailing characters from each value
+// after splitting by split_delimiter. Internal characters are never affected.
 //
-// The field's proto comment serves as the human-readable description.
-// Example:
-//   // Database connection string
-//   string database_url = 1 [
-//     (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET,
-//     (trogon.env.v1alpha1.field).env_var.default_value = "",
-//     (trogon.env.v1alpha1.field).env_var.tags = {
-//       key: "team", value: "data-engineering"
-//     }
-//   ];
+// INVARIANT: If trim is set (present), exactly one of its oneof fields must be set.
+// An empty Trim (with spec unset) is a schema error and must be rejected.
+message Trim {
+  oneof spec {
+    // unicode_whitespace enables trimming of Unicode whitespace
+    // (spaces, tabs, newlines, etc.) from each split value.
+    // Example: " hello " split by "," → ["hello"]
+    google.protobuf.Empty unicode_whitespace = 1;
+
+    // chars enables trimming of specified characters from leading and trailing positions.
+    // Example: "a,aab,aa" split by "," → ["", "b", ""]
+    string chars = 2;
+  }
+}
+
+// EnvVarOption captures metadata about an environment variable field.
 message EnvVarOption {
-  // visibility controls whether this value should be masked in docs/logs.
-  // Determines if the value can be displayed in plaintext (.env examples,
-  // generated documentation, logs) or must be masked for security.
-  //
-  // VISIBILITY_SECRET: value will be shown as "***SECRET***" in docs/logs
-  // VISIBILITY_PLAINTEXT: value can be shown in plaintext
+  // visibility controls whether this value is masked in docs/logs as a security measure.
   Visibility visibility = 1;
 
-  // default_value specifies what to use if the environment variable is not set.
+  // default_value is used if the environment variable is not set.
+  // Empty string means the field is required; any other value makes it optional.
   //
-  // Empty string ("") means the field is REQUIRED - load! will fail if not set.
-  // Any other value means the field is OPTIONAL - that value is used as fallback.
-  //
-  // Examples:
-  //   default_value = ""           // REQUIRED
-  //   default_value = "5432"       // OPTIONAL, defaults to 5432
-  //   default_value = "false"      // OPTIONAL, defaults to false
-  //   default_value = "{}"         // OPTIONAL, defaults to empty JSON
+  // For repeated fields with split_delimiter and/or trim:
+  // - default_value is NOT split or trimmed. Use it as-is when env var is absent.
+  // - Provide default_value as pre-split, pre-trimmed string.
+  // Example: repeated int32 with split="," and default_value="8080,8081"
+  //   When absent, becomes [8080, 8081] (no re-processing).
   string default_value = 2;
 
-  // tags are arbitrary key-value pairs for additional metadata.
-  // Used for compliance, ownership, validation rules, and custom tooling.
+  // split_delimiter splits the environment variable value into multiple items
+  // for repeated fields. Only applicable for repeated field types.
+  // If unset on a repeated field, the entire value is treated as a single item.
   //
-  // Standard tag keys (not enforced, but recommended):
-  //   "team" → service or team that owns this variable
-  //   "rotation_policy" → secret rotation cadence (e.g., "every-90-days")
-  //   "pci-dss" → "true" if PCI-DSS compliance required
-  //   "validation" → validation rule (e.g., "starts_with:sk_", "url", "integer")
-  //   "type" → data type if not string (e.g., "integer", "json", "csv")
-  //   "env" → environment filter (e.g., "prod_only", "dev_optional")
+  // EDGE CASES:
+  // - split_delimiter must be non-empty if set. Empty string is a schema error.
+  // - trim only applies when split_delimiter is set. If trim is set but
+  //   split_delimiter is unset, code generators must reject this as a schema error.
   //
-  // Code generators and tooling can use tags to influence behavior:
-  // - Validation rules can be extracted and enforced
-  // - Documentation can be enhanced with compliance metadata
-  // - Load functions can apply type casting (string → integer, etc.)
+  // Examples (repeated int32):
+  //   split_delimiter = ","   → "8080,8081,8082" becomes [8080, 8081, 8082]
+  //   split_delimiter = ";"   → "tag1;tag2;tag3" becomes [tag1, tag2, tag3]
+  optional string split_delimiter = 4;
+
+  // trim optionally specifies how to trim each split value.
+  // Only applicable when split_delimiter is set.
+  // If unset, no trimming is performed.
+  // If set, exactly one of its fields must be present (schema invariant).
+  //
+  // PROCESSING ORDER: Split first (by split_delimiter), then trim each value.
+  // Example with split_delimiter="," and trim.unicode_whitespace:
+  //   "a, b , c" → split → ["a", " b ", " c"] → trim → ["a", "b", "c"]
+  optional Trim trim = 5;
+
+  // tags are arbitrary key-value pairs for metadata not known ahead of time.
+  // Common keys: "team", "rotation_policy", "pci-dss", "validation", "env".
   map<string, string> tags = 3;
 }
 
@@ -72,51 +83,60 @@ message FieldOptions {
 // field extends google.protobuf.FieldOptions to attach environment
 // variable metadata to message fields.
 //
-// Attach environment variable documentation to any field in your proto:
+// Usage example with all field types:
 //
 //   syntax = "proto3";
 //   package myapp.config.v1;
 //   import "trogon/env/v1alpha1/options.proto";
 //
 //   message AppConfig {
-//     // Stripe live API key for payment processing
+//     // Single string value
 //     string stripe_api_key = 1 [
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET,
-//       (trogon.env.v1alpha1.field).env_var.default_value = "",
-//       (trogon.env.v1alpha1.field).env_var.tags = {
-//         key: "team", value: "payments",
-//         key: "pci-dss", value: "true",
-//         key: "rotation_policy", value: "every-180-days"
-//       }
+//       (trogon.env.v1alpha1.field).env_var.default_value = ""
 //     ];
 //
-//     // Database connection port
+//     // Single value with default
 //     string db_port = 2 [
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
-//       (trogon.env.v1alpha1.field).env_var.default_value = "5432",
-//       (trogon.env.v1alpha1.field).env_var.tags = {
-//         key: "team", value: "data-engineering",
-//         key: "type", value: "integer"
-//       }
+//       (trogon.env.v1alpha1.field).env_var.default_value = "5432"
 //     ];
 //
-//     // Webhook endpoint for async events
-//     string webhook_url = 3 [
+//     // Repeated integers split by comma, trimmed
+//     // ENV: ALLOWED_PORTS="8080, 8081, 8082"
+//     repeated int32 allowed_ports = 3 [
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
-//       (trogon.env.v1alpha1.field).env_var.default_value = "https://example.com/webhooks",
-//       (trogon.env.v1alpha1.field).env_var.tags = {
-//         key: "team", value: "platform"
-//       }
+//       (trogon.env.v1alpha1.field).env_var.default_value = "8080",
+//       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
+//       (trogon.env.v1alpha1.field).env_var.trim.unicode_whitespace = {}
+//     ];
+//
+//     // Repeated strings split by comma with custom character trimming
+//     // ENV: BANNED_USERS="*user1*, *user2*, *user3*"
+//     repeated string banned_users = 4 [
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "",
+//       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
+//       (trogon.env.v1alpha1.field).env_var.trim.chars = "*"
 //     ];
 //   }
 //
 // Code generators (Elixir, Go, Python, etc.) read this metadata to:
-// - Load values from System environment variables (e.g., STRIPE_API_KEY)
+// - Load values from System environment variables
 // - Validate required vs optional fields
 // - Generate documentation and .env examples
-// - Apply type casting based on tags
+// - Split repeated fields and cast each value to the correct type
+// - Trim leading/trailing characters based on trim configuration
 // - Mask secrets in logs based on visibility
 // - Track compliance metadata (PCI-DSS, rotation policies, etc.)
+//
+// Schema invariants and edge cases enforced by code generators:
+// - split_delimiter must be non-empty if set (empty string is a schema error)
+// - If trim is set, split_delimiter must also be set (trim without split is a schema error)
+// - If trim is set, its spec oneof must have exactly one field set (not unset, not multiple)
+// - Trim messages with empty spec are schema errors and must be rejected with clear errors
+// - Processing order for repeated fields: split (by delimiter) → trim each value → type cast
+// - default_value for repeated fields: NOT split/trimmed, used as-is when env var absent
 //
 extend google.protobuf.FieldOptions {
   optional FieldOptions field = 870003;
