@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/TrogonStack/trogon-proto/compare/v0.4.0...v0.4.1) (2026-01-31)
+
+
+### Bug Fixes
+
+* Proto oneof name of Trim ([#23](https://github.com/TrogonStack/trogon-proto/issues/23)) ([0c954ec](https://github.com/TrogonStack/trogon-proto/commit/0c954ecc660891256574cb4aed2fb419fa8bdfd0))
+
 ## [0.4.0](https://github.com/TrogonStack/trogon-proto/compare/v0.3.0...v0.4.0) (2026-01-28)
 
 
