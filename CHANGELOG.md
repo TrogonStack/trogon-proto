@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/TrogonStack/trogon-proto/compare/v0.4.1...v0.4.2) (2026-01-31)
+
+
+### Bug Fixes
+
+* Add optional to default_value ([#25](https://github.com/TrogonStack/trogon-proto/issues/25)) ([c90925d](https://github.com/TrogonStack/trogon-proto/commit/c90925d123fb65917b88e84412a7b2fbe4cbb262))
+
 ## [0.4.1](https://github.com/TrogonStack/trogon-proto/compare/v0.4.0...v0.4.1) (2026-01-31)
 
 
