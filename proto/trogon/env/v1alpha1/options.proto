@@ -9,64 +9,64 @@ import "trogon/env/v1alpha1/visibility.proto";
 option (elixirpb.file).module_prefix = "TrogonProto.Env.V1Alpha1";
 
 // Trim specifies how to remove leading and trailing characters from each value
-// after splitting by split_delimiter. Internal characters are never affected.
+// after splitting by `split_delimiter`. Internal characters are never affected.
 //
-// INVARIANT: If trim is set (present), exactly one of its oneof fields must be set.
-// An empty Trim (with spec unset) is a schema error and must be rejected.
+// INVARIANT: If `trim` is set (present), exactly one of its oneof fields must be set.
+// An empty `Trim` (with `by` unset) is a schema error and must be rejected.
 message Trim {
-  oneof spec {
-    // unicode_whitespace enables trimming of Unicode whitespace
+  oneof by {
+    // `unicode_whitespace` enables trimming of Unicode whitespace
     // (spaces, tabs, newlines, etc.) from each split value.
-    // Example: " hello " split by "," → ["hello"]
+    // Example: `" hello "` split by `","` → `["hello"]`
     google.protobuf.Empty unicode_whitespace = 1;
 
-    // chars enables trimming of specified characters from leading and trailing positions.
-    // Example: "a,aab,aa" split by "," → ["", "b", ""]
+    // `chars` enables trimming of specified characters from leading and trailing positions.
+    // Example: `"a,aab,aa"` split by `","` → `["", "b", ""]`
     string chars = 2;
   }
 }
 
 // EnvVarOption captures metadata about an environment variable field.
 message EnvVarOption {
-  // visibility controls whether this value is masked in docs/logs as a security measure.
+  // `visibility` controls whether this value is masked in docs/logs as a security measure.
   Visibility visibility = 1;
 
-  // default_value is used if the environment variable is not set.
+  // `default_value` is used if the environment variable is not set.
   // Empty string means the field is required; any other value makes it optional.
   //
-  // For repeated fields with split_delimiter and/or trim:
-  // - default_value is NOT split or trimmed. Use it as-is when env var is absent.
-  // - Provide default_value as pre-split, pre-trimmed string.
-  // Example: repeated int32 with split="," and default_value="8080,8081"
-  //   When absent, becomes [8080, 8081] (no re-processing).
+  // For repeated fields with `split_delimiter` and/or `trim`:
+  // - `default_value` is NOT split or trimmed. Use it as-is when env var is absent.
+  // - Provide `default_value` as pre-split, pre-trimmed string.
+  // Example: `repeated int32` with `split=","` and `default_value="8080,8081"`
+  //   When absent, becomes `[8080, 8081]` (no re-processing).
   string default_value = 2;
 
-  // split_delimiter splits the environment variable value into multiple items
+  // `split_delimiter` splits the environment variable value into multiple items
   // for repeated fields. Only applicable for repeated field types.
   // If unset on a repeated field, the entire value is treated as a single item.
   //
   // EDGE CASES:
-  // - split_delimiter must be non-empty if set. Empty string is a schema error.
-  // - trim only applies when split_delimiter is set. If trim is set but
-  //   split_delimiter is unset, code generators must reject this as a schema error.
+  // - `split_delimiter` must be non-empty if set. Empty string is a schema error.
+  // - `trim` only applies when `split_delimiter` is set. If `trim` is set but
+  //   `split_delimiter` is unset, code generators must reject this as a schema error.
   //
-  // Examples (repeated int32):
-  //   split_delimiter = ","   → "8080,8081,8082" becomes [8080, 8081, 8082]
-  //   split_delimiter = ";"   → "tag1;tag2;tag3" becomes [tag1, tag2, tag3]
+  // Examples (`repeated int32`):
+  //   `split_delimiter = ","` → `"8080,8081,8082"` becomes `[8080, 8081, 8082]`
+  //   `split_delimiter = ";"` → `"tag1;tag2;tag3"` becomes `[tag1, tag2, tag3]`
   optional string split_delimiter = 4;
 
-  // trim optionally specifies how to trim each split value.
-  // Only applicable when split_delimiter is set.
+  // `trim` optionally specifies how to trim each split value.
+  // Only applicable when `split_delimiter` is set.
   // If unset, no trimming is performed.
   // If set, exactly one of its fields must be present (schema invariant).
   //
-  // PROCESSING ORDER: Split first (by split_delimiter), then trim each value.
-  // Example with split_delimiter="," and trim.unicode_whitespace:
-  //   "a, b , c" → split → ["a", " b ", " c"] → trim → ["a", "b", "c"]
+  // PROCESSING ORDER: Split first (by `split_delimiter`), then trim each value.
+  // Example with `split_delimiter=","` and `trim.unicode_whitespace`:
+  //   `"a, b , c"` → split → `["a", " b ", " c"]` → trim → `["a", "b", "c"]`
   optional Trim trim = 5;
 
-  // tags are arbitrary key-value pairs for metadata not known ahead of time.
-  // Common keys: "team", "rotation_policy", "pci-dss", "validation", "env".
+  // `tags` are arbitrary key-value pairs for metadata not known ahead of time.
+  // Common keys: `"team"`, `"rotation_policy"`, `"pci-dss"`, `"validation"`, `"env"`.
   map<string, string> tags = 3;
 }
 
@@ -75,12 +75,12 @@ message EnvVarOption {
 // to protobuf fields without symbol conflicts (multiple extensions can
 // define different message types without collision).
 //
-// Use with google.protobuf.FieldOptions extension (see below).
+// Use with `google.protobuf.FieldOptions` extension (see below).
 message FieldOptions {
   optional EnvVarOption env_var = 1;
 }
 
-// field extends google.protobuf.FieldOptions to attach environment
+// `field` extends `google.protobuf.FieldOptions` to attach environment
 // variable metadata to message fields.
 //
 // Usage example with all field types:
@@ -126,17 +126,17 @@ message FieldOptions {
 // - Validate required vs optional fields
 // - Generate documentation and .env examples
 // - Split repeated fields and cast each value to the correct type
-// - Trim leading/trailing characters based on trim configuration
-// - Mask secrets in logs based on visibility
+// - Trim leading/trailing characters based on `trim` configuration
+// - Mask secrets in logs based on `visibility`
 // - Track compliance metadata (PCI-DSS, rotation policies, etc.)
 //
 // Schema invariants and edge cases enforced by code generators:
-// - split_delimiter must be non-empty if set (empty string is a schema error)
-// - If trim is set, split_delimiter must also be set (trim without split is a schema error)
-// - If trim is set, its spec oneof must have exactly one field set (not unset, not multiple)
-// - Trim messages with empty spec are schema errors and must be rejected with clear errors
+// - `split_delimiter` must be non-empty if set (empty string is a schema error)
+// - If `trim` is set, `split_delimiter` must also be set (trim without split is a schema error)
+// - If `trim` is set, its `by` oneof must have exactly one field set (not unset, not multiple)
+// - `Trim` messages with empty `by` are schema errors and must be rejected with clear errors
 // - Processing order for repeated fields: split (by delimiter) → trim each value → type cast
-// - default_value for repeated fields: NOT split/trimmed, used as-is when env var absent
+// - `default_value` for repeated fields: NOT split/trimmed, used as-is when env var absent
 //
 extend google.protobuf.FieldOptions {
   optional FieldOptions field = 870003;
