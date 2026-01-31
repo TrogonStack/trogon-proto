@@ -32,14 +32,15 @@ message EnvVarOption {
   Visibility visibility = 1;
 
   // `default_value` is used if the environment variable is not set.
-  // Empty string means the field is required; any other value makes it optional.
+  // When unset (nil), the field is required and will raise if missing.
+  // When set to any string (including ""), the field is optional with that default.
   //
   // For repeated fields with `split_delimiter` and/or `trim`:
   // - `default_value` is NOT split or trimmed. Use it as-is when env var is absent.
   // - Provide `default_value` as pre-split, pre-trimmed string.
   // Example: `repeated int32` with `split=","` and `default_value="8080,8081"`
   //   When absent, becomes `[8080, 8081]` (no re-processing).
-  string default_value = 2;
+  optional string default_value = 2;
 
   // `split_delimiter` splits the environment variable value into multiple items
   // for repeated fields. Only applicable for repeated field types.
@@ -90,32 +91,36 @@ message FieldOptions {
 //   import "trogon/env/v1alpha1/options.proto";
 //
 //   message AppConfig {
-//     // Single string value
+//     // Required secret - no default_value means env var must be set
 //     string stripe_api_key = 1 [
-//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET,
-//       (trogon.env.v1alpha1.field).env_var.default_value = ""
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_SECRET
 //     ];
 //
-//     // Single value with default
+//     // Optional with default value
 //     string db_port = 2 [
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
 //       (trogon.env.v1alpha1.field).env_var.default_value = "5432"
 //     ];
 //
+//     // Optional with empty string default (allows missing env var)
+//     string app_name = 3 [
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = ""
+//     ];
+//
 //     // Repeated integers split by comma, trimmed
 //     // ENV: ALLOWED_PORTS="8080, 8081, 8082"
-//     repeated int32 allowed_ports = 3 [
+//     repeated int32 allowed_ports = 4 [
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
 //       (trogon.env.v1alpha1.field).env_var.default_value = "8080",
 //       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
 //       (trogon.env.v1alpha1.field).env_var.trim.unicode_whitespace = {}
 //     ];
 //
-//     // Repeated strings split by comma with custom character trimming
+//     // Required repeated strings - must be set in environment
 //     // ENV: BANNED_USERS="*user1*, *user2*, *user3*"
-//     repeated string banned_users = 4 [
+//     repeated string banned_users = 5 [
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
-//       (trogon.env.v1alpha1.field).env_var.default_value = "",
 //       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
 //       (trogon.env.v1alpha1.field).env_var.trim.chars = "*"
 //     ];
@@ -131,6 +136,8 @@ message FieldOptions {
 // - Track compliance metadata (PCI-DSS, rotation policies, etc.)
 //
 // Schema invariants and edge cases enforced by code generators:
+// - `default_value` unset (nil) = required field, raises if env var missing
+// - `default_value` set (any string, including "") = optional field with that default
 // - `split_delimiter` must be non-empty if set (empty string is a schema error)
 // - If `trim` is set, `split_delimiter` must also be set (trim without split is a schema error)
 // - If `trim` is set, its `by` oneof must have exactly one field set (not unset, not multiple)
