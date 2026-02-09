@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/TrogonStack/trogon-proto/compare/v0.4.2...v0.5.0) (2026-02-09)
+
+
+### Features
+
+* Add cursor pagination messages for Relay GraphQL ([#27](https://github.com/TrogonStack/trogon-proto/issues/27)) ([bde7757](https://github.com/TrogonStack/trogon-proto/commit/bde7757f552931c5c457b7e4e407b349fe943fe2))
+
 ## [0.4.2](https://github.com/TrogonStack/trogon-proto/compare/v0.4.1...v0.4.2) (2026-01-31)
 
 
