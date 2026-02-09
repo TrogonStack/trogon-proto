@@ -1,0 +1,36 @@
+syntax = "proto3";
+package trogon.relay.v1alpha1;
+
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Relay.V1Alpha1";
+
+// PageInfo provides cursor-based pagination information for Relay connections.
+//
+// This message follows the Relay GraphQL Connection specification and contains
+// metadata about the current page in a cursor-paginated result set.
+//
+// Example usage:
+//
+//   import "trogon/relay/v1alpha1/page_info.proto";
+//
+//   message UserConnection {
+//     repeated UserEdge edges = 1;
+//     trogon.relay.v1alpha1.PageInfo page_info = 2;
+//   }
+//
+message PageInfo {
+  // Whether there are more items after the current page.
+  bool has_next_page = 1;
+
+  // Whether there are items before the current page.
+  bool has_previous_page = 2;
+
+  // The cursor of the first item in this page.
+  // Omitted if the page is empty.
+  optional string start_cursor = 3;
+
+  // The cursor of the last item in this page.
+  // Omitted if the page is empty.
+  optional string end_cursor = 4;
+}
