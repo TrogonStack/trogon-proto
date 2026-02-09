@@ -1,0 +1,57 @@
+syntax = "proto3";
+package trogon.relay.v1alpha1;
+
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Relay.V1Alpha1";
+
+// CursorPagination represents cursor-based pagination parameters.
+//
+// Use this message to specify pagination parameters in list query requests
+// following the Relay specification.
+//
+// Enforces Relay constraints:
+// - Exactly one of Forward or Backward must be specified
+// - Parameters for each direction are logically grouped
+//
+// Example usage:
+//
+//   import "trogon/relay/v1alpha1/cursor_pagination.proto";
+//
+//   message ListUsersRequest {
+//     trogon.relay.v1alpha1.CursorPagination pagination = 1;
+//   }
+//
+message CursorPagination {
+  // Forward specifies parameters for forward pagination direction.
+  message Forward {
+    // Number of items to return.
+    // Must be greater than 0.
+    // Typical values: 10, 20, 50
+    uint32 first = 1;
+
+    // Opaque cursor from previous page_info.end_cursor.
+    // Omit for first page.
+    optional string after = 2;
+  }
+
+  // Backward specifies parameters for backward pagination direction.
+  message Backward {
+    // Number of items to return.
+    // Must be greater than 0.
+    uint32 last = 1;
+
+    // Opaque cursor from previous page_info.start_cursor.
+    // Omit for last page.
+    optional string before = 2;
+  }
+
+  // Direction: forward or backward pagination.
+  oneof direction {
+    // Get next N items after cursor.
+    Forward forward = 1;
+
+    // Get previous N items before cursor.
+    Backward backward = 2;
+  }
+}
