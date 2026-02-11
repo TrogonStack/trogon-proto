@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/TrogonStack/trogon-proto/compare/v0.5.0...v0.6.0) (2026-02-11)
+
+
+### Features
+
+* Add object ID options.proto ([#30](https://github.com/TrogonStack/trogon-proto/issues/30)) ([2d4ee42](https://github.com/TrogonStack/trogon-proto/commit/2d4ee42aecfaeeb74beddb85cc62eada2702c7ba))
+
 ## [0.5.0](https://github.com/TrogonStack/trogon-proto/compare/v0.4.2...v0.5.0) (2026-02-09)
 
 
