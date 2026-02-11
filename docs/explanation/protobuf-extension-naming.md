@@ -1,6 +1,6 @@
 # Protobuf Extension Naming
 
-Naming conventions for protobuf extensions in trogon-proto.
+Guidelines for creating protobuf extensions in trogon-proto. Follow these conventions when adding new extensions.
 
 ## Rules
 
@@ -50,17 +50,55 @@ message EnumValueOptions {
 
 `Namespace` stays in `namespace.proto` because it's shared by `FileOptions`, `EnumOptions`, and `EnumValueOptions.Format`.
 
-## Current Structure
+## Structure Template
 
+When creating a new extension at `trogon/<feature>/<version>/options.proto`:
+
+```text
+trogon/<feature>/<version>/options.proto
+├─ FileOptions           { ... }  → file (8700XX)
+├─ MessageOptions        { ... }  → message (8700XX)
+├─ EnumOptions           { ... }  → enum (8700XX)
+├─ EnumValueOptions      { ... }  → enum_value (8700XX)
+├─ FieldOptions          { ... }  → field (8700XX)
+└─ <Nested Types>                 — type-specific, nested inside parent Options
 ```
-options.proto
+
+**Pick the descriptor types you need:**
+- `FileOptions` - file-level options (e.g., module namespace)
+- `MessageOptions` - message-level options (e.g., validation rules)
+- `EnumOptions` - enum-level options (e.g., allowed values)
+- `EnumValueOptions` - enum value-level options (e.g., code generation hints)
+- `FieldOptions` - field-level options (e.g., format constraints)
+
+**Field number selection:**
+- Start at next available number in 870000+ range
+- Each wrapper gets its own extension number
+- Internal fields within wrappers can reuse numbers (they're scoped)
+
+## Field Number Registry
+
+Claim your extension numbers here to prevent conflicts:
+
+| Number | Extension | Descriptor Type |
+|--------|-----------|-----------------|
+| 870000 | trogon.uuid.v1 | google.protobuf.FileOptions |
+| 870001 | trogon.uuid.v1 | google.protobuf.EnumOptions |
+| 870002 | trogon.uuid.v1 | google.protobuf.EnumValueOptions |
+| 870010 | trogon.object_id.v1alpha1 | google.protobuf.EnumValueOptions |
+| 870011–870999 | *Available* | — |
+
+## Examples in This Repo
+
+```text
+trogon/uuid/v1/options.proto
 ├─ FileOptions           { namespace }           → file (870000)
 ├─ EnumOptions           { namespace }           → enum (870001)
 └─ EnumValueOptions      { format }              → enum_value (870002)
    └─ Format (nested)    { namespace, template }
 
-namespace.proto
-└─ Namespace             { uuid | dns | url }    — shared
+trogon/object_id/v1alpha1/options.proto
+└─ EnumValueOptions      { object_type, separator } → enum_value (870010)
 ```
 
 ## Field Number Ranges
@@ -70,6 +108,42 @@ namespace.proto
 | 1–999 | Reserved by Google |
 | 1,000–99,999 | Public (register first) |
 | **100,000+** | **Private (use this)** |
+
+## Creating a New Extension
+
+1. **Choose a feature name and version**: `trogon/<feature>/<version>/`
+   - Use semantic versioning: `v1`, `v2`, or alpha/beta: `v1alpha1`, `v1beta1`
+   - Example: `trogon/validation/v1/`, `trogon/codegen/v1alpha1/`
+
+2. **Create `options.proto`**: `proto/trogon/<feature>/<version>/options.proto`
+   ```protobuf
+   syntax = "proto3";
+   package trogon.<feature>.<version>;
+
+   import "elixirpb.proto";
+   import "google/protobuf/descriptor.proto";
+
+   option (elixirpb.file).module_prefix = "TrogonProto.<Feature>.<Version>";
+   ```
+
+3. **Define wrapper messages** for each descriptor type you need:
+   ```protobuf
+   message EnumValueOptions {
+     string my_field = 1;
+     optional string my_optional_field = 2;
+   }
+   ```
+
+4. **Extend the Google descriptor** with your wrapper:
+   ```protobuf
+   extend google.protobuf.EnumValueOptions {
+     optional EnumValueOptions enum_value = 8700XX;  // pick next available
+   }
+   ```
+
+5. **Document in this file** - add your extension to the "Examples" section
+
+6. **Update field number registry** - claim your number(s) in this doc to prevent conflicts
 
 ## References
 
