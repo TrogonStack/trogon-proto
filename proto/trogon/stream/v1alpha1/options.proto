@@ -1,0 +1,39 @@
+syntax = "proto3";
+package trogon.stream.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/descriptor.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Stream.V1Alpha1";
+
+// EnumValueOptions defines enum-value-level options for stream identity prefixes.
+message EnumValueOptions {
+  // The stream prefix for this aggregate (e.g., "order", "account", "fanid").
+  string prefix = 1;
+
+  // Separator between prefix and identity value. Defaults to ":" if not set.
+  optional string separator = 2;
+}
+
+extend google.protobuf.EnumValueOptions {
+  // enum_value specifies the stream identity prefix for an enum value.
+  //
+  // Example usage:
+  //
+  //   // acme/type/v1/stream_prefix.proto
+  //   syntax = "proto3";
+  //   package acme.type.v1;
+  //
+  //   import "trogon/stream/v1alpha1/options.proto";
+  //
+  //   enum StreamPrefix {
+  //     STREAM_PREFIX_UNSPECIFIED = 0;
+  //     STREAM_PREFIX_ORDER = 1 [(trogon.stream.v1alpha1.enum_value).prefix = "order"];
+  //     STREAM_PREFIX_ACCOUNT = 2 [(trogon.stream.v1alpha1.enum_value) = {
+  //       prefix: "account",
+  //       separator: "-"
+  //     }];
+  //   }
+  //
+  optional EnumValueOptions enum_value = 870011;
+}
