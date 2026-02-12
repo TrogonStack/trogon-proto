@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/TrogonStack/trogon-proto/compare/v0.6.0...v0.7.0) (2026-02-12)
+
+
+### Features
+
+* Add stream prefix options.proto ([#32](https://github.com/TrogonStack/trogon-proto/issues/32)) ([49483b9](https://github.com/TrogonStack/trogon-proto/commit/49483b9a97326a2b09fcf16c0f277825497df1b9))
+
 ## [0.6.0](https://github.com/TrogonStack/trogon-proto/compare/v0.5.0...v0.6.0) (2026-02-11)
 
 
