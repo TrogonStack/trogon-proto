@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package trogon.consistency.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/duration.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Consistency.V1Alpha1";
+
+// Configuration for read-your-writes consistency guarantees in eventual consistency systems.
+//
+// Used in query operations to wait for projections/read models to catch up to a specific version
+// after a write operation. This enables clients to immediately read their own writes despite
+// projection lag in CQRS/Event Sourcing architectures.
+//
+// ## Consistency Modes
+//
+// ### MinVersion (Recommended - Read-Your-Writes)
+// Waits for projection to reach AT LEAST the specified version. Will use newer data if available.
+// Use this after mutations to ensure you can immediately read what you just wrote.
+//
+// ### ExactVersion (Strict - Reproducible Snapshots)
+// Waits for projection to reach EXACTLY the specified version. Rejects if version is newer.
+// Use this only when you need reproducible queries at a specific point-in-time (audits, reports).
+//
+// ## Usage Pattern
+//
+// 1. Client performs mutation (e.g., CreateOrder, UpdateInventory)
+// 2. Server returns stream_version (e.g., version 5)
+// 3. Client immediately queries with Consistency:
+//    - min_version { version: 5 }  (recommended - read-your-writes)
+//    - exact_version { version: 5 }  (strict - reproducible snapshot)
+// 4. Server retries query until projection reaches version or timeout
+//
+// ## Example
+//
+// ```protobuf
+// // Mutation response
+// message CreateOrderResponse {
+//   string order_id = 1;
+//   uint64 stream_version = 2;  // Returns: 5
+// }
+//
+// // Read-your-writes (recommended)
+// message GetOrderRequest {
+//   string order_id = 1;
+//   trogon.consistency.v1alpha1.Consistency consistency = 2;
+// }
+//
+// GetOrderRequest {
+//   order_id: "order-123",
+//   consistency: {
+//     min_version: { version: 5 },
+//     timeout_duration: "1s",
+//     delay_duration: "100ms"
+//   }
+// }
+// ```
+//
+// ## Server Implementation Guidelines
+//
+// Servers should:
+// - Enforce reasonable timeout limits (e.g., default 1s, max 5s)
+// - Enforce reasonable delay limits (e.g., default 100ms, max 500ms)
+// - Return unavailable status on timeout with appropriate error metadata
+// - Return failed precondition status on snapshot expired (ExactVersion only)
+// - Log when clamping client-provided values
+//
+// ## Reference
+//
+// Inspired by SpiceDB's Consistency patterns (at_least_as_fresh and at_exact_snapshot modes).
+// See: https://authzed.com/docs/spicedb/concepts/consistency
+message Consistency {
+  // Which consistency mode to use
+  oneof requirement {
+    // Wait for projection to reach AT LEAST this version (version >= X).
+    //
+    // Recommended for read-your-writes consistency. If projection has already
+    // processed newer events, returns immediately with the newer data.
+    //
+    // Example: After CreateOrder returns version 5, query with version: 5
+    // to ensure you see your created order (or any newer state).
+    MinVersion min_version = 1;
+
+    // Wait for projection to reach EXACTLY this version (version == X).
+    //
+    // Stricter mode for reproducible queries at a specific point-in-time.
+    // If projection has processed newer events (version > X), query fails
+    // with failed precondition error rather than returning newer data.
+    //
+    // Use only for: audit queries, reports requiring exact historical state.
+    ExactVersion exact_version = 2;
+  }
+
+  // Maximum time to wait for projection to catch up.
+  //
+  // Applies to any requirement mode above. If requirement is not set (eventual consistency),
+  // this field is ignored.
+  //
+  // Recommended server limits:
+  // - Default: 1s (if not provided)
+  // - Maximum: 5s (values above should be clamped and logged)
+  //
+  // If projection doesn't reach required version within timeout, query should return
+  // unavailable error with appropriate error metadata (e.g., projection_timeout).
+  optional google.protobuf.Duration timeout_duration = 3;
+
+  // Delay between retry attempts.
+  //
+  // Applies to any requirement mode above. If requirement is not set (eventual consistency),
+  // this field is ignored.
+  //
+  // Recommended server limits:
+  // - Default: 100ms (if not provided)
+  // - Maximum: 500ms (values above should be clamped and logged)
+  //
+  // Lower values = more responsive but higher server load
+  // Higher values = less load but slower to detect projection updates
+  optional google.protobuf.Duration delay_duration = 4;
+}
+
+// Wait for projection to be at least as fresh as the specified version.
+message MinVersion {
+  // Minimum stream version required (projection.version >= this).
+  //
+  // Client should use the stream_version returned from their previous mutation.
+  // Server should retry query until projection reaches or exceeds this version.
+  int64 version = 1;
+}
+
+// Wait for projection to reach exactly the specified version (strict snapshot).
+message ExactVersion {
+  // Exact stream version required (projection.version == this).
+  //
+  // Server should retry until projection reaches this version, or fail with
+  // failed precondition error if projection has moved past this version.
+  int64 version = 1;
+}
