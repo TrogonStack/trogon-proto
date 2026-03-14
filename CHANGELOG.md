@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/TrogonStack/trogon-proto/compare/v0.7.0...v0.8.0) (2026-03-14)
+
+
+### Features
+
+* Add v1alpha1 Consistency pattern for read-after-write ([#34](https://github.com/TrogonStack/trogon-proto/issues/34)) ([6b860a9](https://github.com/TrogonStack/trogon-proto/commit/6b860a9202dec405ad86c2245361e01d529dabeb))
+
 ## [0.7.0](https://github.com/TrogonStack/trogon-proto/compare/v0.6.0...v0.7.0) (2026-02-12)
 
 
