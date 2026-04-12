@@ -90,6 +90,14 @@ message FieldOptions {
 //   package myapp.config.v1;
 //   import "trogon/env/v1alpha1/options.proto";
 //
+//   enum LogLevel {
+//     LOG_LEVEL_UNSPECIFIED = 0;
+//     LOG_LEVEL_DEBUG = 1;
+//     LOG_LEVEL_INFO  = 2;
+//     LOG_LEVEL_WARN  = 3;
+//     LOG_LEVEL_ERROR = 4;
+//   }
+//
 //   message AppConfig {
 //     // Required secret - no default_value means env var must be set
 //     string stripe_api_key = 1 [
@@ -124,6 +132,13 @@ message FieldOptions {
 //       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
 //       (trogon.env.v1alpha1.field).env_var.trim.chars = "*"
 //     ];
+//
+//     // Enum field - value must match the enum name exactly
+//     // ENV: LOG_LEVEL="LOG_LEVEL_DEBUG"
+//     LogLevel log_level = 6 [
+//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
+//       (trogon.env.v1alpha1.field).env_var.default_value = "LOG_LEVEL_INFO"
+//     ];
 //   }
 //
 // Code generators (Elixir, Go, Python, etc.) read this metadata to:
@@ -144,6 +159,9 @@ message FieldOptions {
 // - `Trim` messages with empty `by` are schema errors and must be rejected with clear errors
 // - Processing order for repeated fields: split (by delimiter) → trim each value → type cast
 // - `default_value` for repeated fields: NOT split/trimmed, used as-is when env var absent
+// - Enum fields: the env var value must match the enum value name exactly (e.g., "LOG_LEVEL_DEBUG").
+//   `default_value` must also be the exact enum value name. Code generators cast by name lookup.
+//   TODO: consider supporting numeric values (e.g., "1") and case-insensitive matching in the future.
 //
 extend google.protobuf.FieldOptions {
   optional FieldOptions field = 870003;
