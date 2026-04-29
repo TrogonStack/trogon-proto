@@ -29,8 +29,8 @@ message MessageOptions {
 
     // code is the canonical error code for the template.
     //
-    // This must not be `ERROR_CODE_UNSPECIFIED` in a valid template.
-    ErrorCode code = 4;
+    // This must not be `OK` in a valid template.
+    Code code = 4;
   }
 
   // template specifies the static error template for this message.
@@ -55,7 +55,7 @@ extend google.protobuf.MessageOptions {
   //       domain: "compute.googleapis.com",
   //       reason: "RESOURCE_AVAILABILITY",
   //       message: "Requested resources are unavailable.",
-  //       code: ERROR_CODE_RESOURCE_EXHAUSTED
+  //       code: RESOURCE_EXHAUSTED
   //     };
   //
   //     string zone = 1;

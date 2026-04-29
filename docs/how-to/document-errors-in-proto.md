@@ -13,7 +13,7 @@ message ResourceAvailabilityError {
     domain: "compute.googleapis.com"
     reason: "RESOURCE_AVAILABILITY"
     message: "Requested resources are unavailable."
-    code: ERROR_CODE_RESOURCE_EXHAUSTED
+    code: RESOURCE_EXHAUSTED
   };
 
   string zone = 1;
@@ -26,7 +26,7 @@ message ResourceAvailabilityError {
 ## Notes
 
 - `template` is required semantically for any message that uses `trogon.error.v1alpha1.message`.
-- `code` must not be `ERROR_CODE_UNSPECIFIED`.
+- `code` must not be `OK`.
 - Dynamic payload fields are currently scalar `string` fields.
 
 ## References
