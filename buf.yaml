@@ -11,6 +11,15 @@ deps:
 lint:
   use:
     - STANDARD
+  ignore_only:
+    # Keep this enum aligned with google.rpc.Code naming and numbering.
+    ENUM_VALUE_PREFIX:
+      - proto/trogon/error/v1alpha1/code.proto
+    # Keep the zero value compatible with the local error-only mirror of
+    # google.rpc.Code, which intentionally uses `UNSPECIFIED` instead of the
+    # repo-wide `_UNSPECIFIED` suffix convention.
+    ENUM_ZERO_VALUE_SUFFIX:
+      - proto/trogon/error/v1alpha1/code.proto
   disallow_comment_ignores: true
 
 breaking:
