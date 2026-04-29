@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/TrogonStack/trogon-proto/compare/v0.8.0...v0.9.0) (2026-04-29)
+
+
+### Features
+
+* **error:** Align runtime integrations on a shared contract ([#37](https://github.com/TrogonStack/trogon-proto/issues/37)) ([200fb3e](https://github.com/TrogonStack/trogon-proto/commit/200fb3ee81968d4d594a90ea409be129cf72168b))
+
 ## [0.8.0](https://github.com/TrogonStack/trogon-proto/compare/v0.7.0...v0.8.0) (2026-03-14)
 
 
