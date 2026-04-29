@@ -26,7 +26,7 @@ message ResourceAvailabilityError {
 ## Notes
 
 - `template` is required semantically for any message that uses `trogon.error.v1alpha1.message`.
-- `code` must not be `OK`.
+- `code` must not be `UNSPECIFIED`.
 - Dynamic payload fields are currently scalar `string` fields.
 
 ## References

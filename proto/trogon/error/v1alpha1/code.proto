@@ -5,13 +5,19 @@ import "elixirpb.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
 
-// Code mirrors `google.rpc.Code` exactly so typed error templates can point
-// at the canonical Google RPC error space without importing `google.rpc`.
+// Code mirrors the error values from `google.rpc.Code` so typed error
+// templates can point at the canonical Google RPC error space without
+// importing `google.rpc`.
 //
 // Source:
 // https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
 enum Code {
-  OK = 0;
+  // Zero value reserved for unset templates.
+  //
+  // `google.rpc.Code.OK` is intentionally omitted because this enum is used
+  // only for errors.
+  UNSPECIFIED = 0;
+
   CANCELLED = 1;
   UNKNOWN = 2;
   INVALID_ARGUMENT = 3;
@@ -19,7 +25,6 @@ enum Code {
   NOT_FOUND = 5;
   ALREADY_EXISTS = 6;
   PERMISSION_DENIED = 7;
-  UNAUTHENTICATED = 16;
   RESOURCE_EXHAUSTED = 8;
   FAILED_PRECONDITION = 9;
   ABORTED = 10;
@@ -28,4 +33,5 @@ enum Code {
   INTERNAL = 13;
   UNAVAILABLE = 14;
   DATA_LOSS = 15;
+  UNAUTHENTICATED = 16;
 }
