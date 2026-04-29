@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "proto2";
 package trogon.error.v1alpha1;
 
 import "elixirpb.proto";
@@ -12,12 +12,6 @@ option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
 // Source:
 // https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
 enum Code {
-  // Zero value reserved for unset templates.
-  //
-  // `google.rpc.Code.OK` is intentionally omitted because this enum is used
-  // only for errors.
-  UNSPECIFIED = 0;
-
   CANCELLED = 1;
   UNKNOWN = 2;
   INVALID_ARGUMENT = 3;
