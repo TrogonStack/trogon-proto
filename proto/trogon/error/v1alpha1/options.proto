@@ -3,6 +3,7 @@ package trogon.error.v1alpha1;
 
 import "elixirpb.proto";
 import "google/protobuf/descriptor.proto";
+import "trogon/error/v1alpha1/code.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
 
@@ -26,16 +27,17 @@ message MessageOptions {
     // message is the default human-readable message template.
     string message = 3;
 
-    // code is the canonical code name for the error.
-    // Example: "RESOURCE_EXHAUSTED"
+    // code is the canonical error code for the template.
     //
-    // This is stored as a string for now so the option can remain independent
-    // from any transport-specific code enum.
-    string code = 4;
+    // This must not be `ERROR_CODE_UNSPECIFIED` in a valid template.
+    ErrorCode code = 4;
   }
 
   // template specifies the static error template for this message.
-  optional Template template = 1;
+  //
+  // This field is required semantically for any message that uses the
+  // `trogon.error.v1alpha1.message` extension.
+  Template template = 1;
 }
 
 extend google.protobuf.MessageOptions {
@@ -53,7 +55,7 @@ extend google.protobuf.MessageOptions {
   //       domain: "compute.googleapis.com",
   //       reason: "RESOURCE_AVAILABILITY",
   //       message: "Requested resources are unavailable.",
-  //       code: "RESOURCE_EXHAUSTED"
+  //       code: ERROR_CODE_RESOURCE_EXHAUSTED
   //     };
   //
   //     string zone = 1;
