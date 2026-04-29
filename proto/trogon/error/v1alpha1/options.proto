@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 package trogon.error.v1alpha1;
 
 import "elixirpb.proto";
@@ -18,21 +18,25 @@ message MessageOptions {
   message Template {
     // domain identifies the logical owner of the error contract.
     // Example: "compute.googleapis.com"
-    required string domain = 1;
+    optional string domain = 1;
 
     // reason identifies the stable machine-readable error reason.
     // Example: "RESOURCE_AVAILABILITY"
-    required string reason = 2;
+    optional string reason = 2;
 
     // message is the default human-readable message template.
-    required string message = 3;
+    optional string message = 3;
 
     // code is the canonical error code for the template.
-    required Code code = 4;
+    //
+    // In proto3 this field uses explicit presence via `optional`.
+    optional Code code = 4;
   }
 
   // template specifies the static error template for this message.
-  required Template template = 1;
+  //
+  // In proto3 message fields already have presence tracking.
+  Template template = 1;
 }
 
 extend google.protobuf.MessageOptions {

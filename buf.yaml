@@ -13,14 +13,13 @@ lint:
     - STANDARD
   ignore_only:
     # Keep this enum aligned with google.rpc.Code naming and numbering.
-    ENUM_FIRST_VALUE_ZERO:
-      - proto/trogon/error/v1alpha1/code.proto
     ENUM_VALUE_PREFIX:
       - proto/trogon/error/v1alpha1/code.proto
-    # Use proto2 required fields for this custom options wrapper so template
-    # definitions cannot omit the canonical error contract fields.
-    FIELD_NOT_REQUIRED:
-      - proto/trogon/error/v1alpha1/options.proto
+    # Keep the zero value compatible with the local error-only mirror of
+    # google.rpc.Code, which intentionally uses `UNSPECIFIED` instead of the
+    # repo-wide `_UNSPECIFIED` suffix convention.
+    ENUM_ZERO_VALUE_SUFFIX:
+      - proto/trogon/error/v1alpha1/code.proto
   disallow_comment_ignores: true
 
 breaking:

@@ -25,7 +25,8 @@ message ResourceAvailabilityError {
 
 ## Notes
 
-- `template`, `domain`, `reason`, `message`, and `code` are required in the option schema.
+- `domain`, `reason`, `message`, and `code` use explicit presence in proto3.
+- `template` also has presence because it is a message field.
 - Dynamic payload fields are currently scalar `string` fields.
 
 ## References
