@@ -29,8 +29,8 @@ message MessageOptions {
 
     // code is the canonical error code for the template.
     //
-    // This must not be `UNSPECIFIED` in a valid template.
-    Code code = 4;
+    // A valid template must set this field and must not use `UNSPECIFIED`.
+    optional Code code = 4;
   }
 
   // template specifies the static error template for this message.
