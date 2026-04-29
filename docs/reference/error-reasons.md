@@ -229,7 +229,7 @@ Example:
 ## References
 
 - [error-model.md](./error-model.md)
-- [RESEARCH.md](../../RESEARCH.md)
+- [error-sources.md](./error-sources.md)
 - https://google.aip.dev/193
 - https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest/v1/ErrorInfo
 - https://docs.cloud.google.com/vmware-engine/docs/reference/rest/v1/ErrorReason

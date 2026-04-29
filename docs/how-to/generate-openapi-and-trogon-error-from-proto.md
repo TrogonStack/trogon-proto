@@ -174,7 +174,7 @@ This keeps the contract typed in one place and avoids duplicating the same error
 
 - [../reference/error-model.md](../reference/error-model.md)
 - [../explanation/adr-error-model-and-google-rpc-compatibility.md](../explanation/adr-error-model-and-google-rpc-compatibility.md)
-- [RESEARCH.md](../../RESEARCH.md)
+- [../reference/error-sources.md](../reference/error-sources.md)
 - https://straw-hat-team.github.io/adr/adrs/0129349218/README.html
 - https://grpc-ecosystem.github.io/grpc-gateway/docs/mapping/customizing_openapi_output/
 - https://grpc-ecosystem.github.io/grpc-gateway/docs/mapping/using_ref_with_responses/

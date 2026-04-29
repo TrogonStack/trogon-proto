@@ -2,7 +2,7 @@
 
 This document defines the repository-level error model guidance for trogon-proto.
 
-It is intentionally normative. `RESEARCH.md` records the research trail. This document defines the contract direction the repo should follow.
+It is intentionally normative. [error-sources.md](./error-sources.md) preserves the primary source trail behind these decisions. This document defines the contract direction the repo should follow.
 
 ## Overview
 
@@ -269,7 +269,7 @@ If a project wants machine-readable per-method contracts, that should be modeled
 
 ## References
 
-- [RESEARCH.md](../../RESEARCH.md)
+- [error-sources.md](./error-sources.md)
 - https://straw-hat-team.github.io/adr/adrs/0129349218/README.html
 - https://google.aip.dev/192
 - https://google.aip.dev/193

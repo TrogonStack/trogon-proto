@@ -161,7 +161,7 @@ When deciding where a concept belongs:
 
 - [../reference/error-model.md](../reference/error-model.md)
 - [../how-to/generate-openapi-and-trogon-error-from-proto.md](../how-to/generate-openapi-and-trogon-error-from-proto.md)
-- [RESEARCH.md](../../RESEARCH.md)
+- [../reference/error-sources.md](../reference/error-sources.md)
 - https://straw-hat-team.github.io/adr/adrs/0129349218/README.html
 - https://google.aip.dev/193
 - https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto

@@ -191,7 +191,7 @@ rpc DeleteWidget(DeleteWidgetRequest) returns (google.protobuf.Empty);
 
 - [../reference/error-model.md](../reference/error-model.md)
 - [../reference/error-reasons.md](../reference/error-reasons.md)
-- [RESEARCH.md](../../RESEARCH.md)
+- [../reference/error-sources.md](../reference/error-sources.md)
 - https://google.aip.dev/192
 - https://google.aip.dev/193
 - https://grpc.io/docs/guides/status-codes/

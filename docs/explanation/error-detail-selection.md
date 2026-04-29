@@ -228,7 +228,7 @@ If the answer to the last question is yes, use both `ErrorInfo` and that detail 
 - [../reference/error-model.md](../reference/error-model.md)
 - [../reference/error-reasons.md](../reference/error-reasons.md)
 - [adr-error-model-and-google-rpc-compatibility.md](./adr-error-model-and-google-rpc-compatibility.md)
-- [RESEARCH.md](../../RESEARCH.md)
+- [../reference/error-sources.md](../reference/error-sources.md)
 - https://google.aip.dev/193
 - https://cloud.google.com/storage/docs/reference/rpc/google.rpc
 - https://docs.cloud.google.com/dotnet/docs/reference/Google.Api.CommonProtos/latest/Google.Rpc.BadRequest

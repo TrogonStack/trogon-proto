@@ -12,11 +12,11 @@
 
 - [Error Model](docs/reference/error-model.md)
 - [Error Reasons](docs/reference/error-reasons.md)
+- [Error Sources](docs/reference/error-sources.md)
 - [Document Errors in Proto](docs/how-to/document-errors-in-proto.md)
 - [Generate OpenAPI and trogon_error from Proto](docs/how-to/generate-openapi-and-trogon-error-from-proto.md)
 - [ADR Error Model and Google RPC Compatibility](docs/explanation/adr-error-model-and-google-rpc-compatibility.md)
 - [Error Detail Selection](docs/explanation/error-detail-selection.md)
-- [Research: Documenting Google-Style gRPC Errors in Proto](RESEARCH.md)
 
 ## Installation
 
