@@ -8,6 +8,8 @@
 
 **trogon-proto is designed for teams building event-sourced systems or microservices where consistent identity generation matters.** It integrates with Buf and standard protoc toolchains.
 
+Documentation lives in [docs/README.md](docs/README.md).
+
 ## Installation
 
 Add to your `buf.yaml`:
