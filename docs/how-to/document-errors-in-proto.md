@@ -31,6 +31,5 @@ message ResourceAvailabilityError {
 
 ## References
 
-- [../reference/error-sources.md](../reference/error-sources.md)
 - [../../proto/trogon/error/v1alpha1/code.proto](../../proto/trogon/error/v1alpha1/code.proto)
 - [../../proto/trogon/error/v1alpha1/options.proto](../../proto/trogon/error/v1alpha1/options.proto)
