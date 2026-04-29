@@ -8,6 +8,16 @@
 
 **trogon-proto is designed for teams building event-sourced systems or microservices where consistent identity generation matters.** It integrates with Buf and standard protoc toolchains.
 
+## Documentation
+
+- [Error Model](docs/reference/error-model.md)
+- [Error Reasons](docs/reference/error-reasons.md)
+- [Document Errors in Proto](docs/how-to/document-errors-in-proto.md)
+- [Generate OpenAPI and trogon_error from Proto](docs/how-to/generate-openapi-and-trogon-error-from-proto.md)
+- [ADR Error Model and Google RPC Compatibility](docs/explanation/adr-error-model-and-google-rpc-compatibility.md)
+- [Error Detail Selection](docs/explanation/error-detail-selection.md)
+- [Research: Documenting Google-Style gRPC Errors in Proto](RESEARCH.md)
+
 ## Installation
 
 Add to your `buf.yaml`:

@@ -1,0 +1,65 @@
+syntax = "proto3";
+package trogon.error.v1alpha1;
+
+import "elixirpb.proto";
+import "google/protobuf/descriptor.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
+
+// MessageOptions defines message-level options for error payload messages.
+message MessageOptions {
+  // Template defines the static error template for a message that can be
+  // adapted into a runtime error representation.
+  //
+  // These fields are intentionally language-neutral so both Elixir and Go
+  // runtimes can derive their native error template APIs from the same proto
+  // annotation.
+  message Template {
+    // domain identifies the logical owner of the error contract.
+    // Example: "compute.googleapis.com"
+    string domain = 1;
+
+    // reason identifies the stable machine-readable error reason.
+    // Example: "RESOURCE_AVAILABILITY"
+    string reason = 2;
+
+    // message is the default human-readable message template.
+    string message = 3;
+
+    // code is the canonical code name for the error.
+    // Example: "RESOURCE_EXHAUSTED"
+    //
+    // This is stored as a string for now so the option can remain independent
+    // from any transport-specific code enum.
+    string code = 4;
+  }
+
+  // template specifies the static error template for this message.
+  optional Template template = 1;
+}
+
+extend google.protobuf.MessageOptions {
+  // message specifies message-level options for typed error payload messages.
+  //
+  // Example:
+  //
+  //   syntax = "proto3";
+  //   package acme.compute.v1;
+  //
+  //   import "trogon/error/v1alpha1/options.proto";
+  //
+  //   message ResourceAvailabilityError {
+  //     option (trogon.error.v1alpha1.message).template = {
+  //       domain: "compute.googleapis.com",
+  //       reason: "RESOURCE_AVAILABILITY",
+  //       message: "Requested resources are unavailable.",
+  //       code: "RESOURCE_EXHAUSTED"
+  //     };
+  //
+  //     string zone = 1;
+  //     string vm_type = 2;
+  //     string attachment = 3;
+  //     string zones_with_capacity = 4;
+  //   }
+  optional MessageOptions message = 870012;
+}
