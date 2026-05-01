@@ -4,6 +4,7 @@ package trogon.error.v1alpha1;
 import "elixirpb.proto";
 import "google/protobuf/descriptor.proto";
 import "trogon/error/v1alpha1/code.proto";
+import "trogon/error/v1alpha1/visibility.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
 
@@ -39,6 +40,14 @@ message MessageOptions {
   Template template = 1;
 }
 
+// FieldOptions defines field-level options for error payload message fields.
+message FieldOptions {
+  // visibility controls who can see this metadata field at runtime.
+  //
+  // When unset, defaults to INTERNAL for safety.
+  Visibility visibility = 1;
+}
+
 extend google.protobuf.MessageOptions {
   // message specifies message-level options for typed error payload messages.
   //
@@ -63,4 +72,28 @@ extend google.protobuf.MessageOptions {
   //     string zones_with_capacity = 4;
   //   }
   optional MessageOptions message = 870012;
+}
+
+extend google.protobuf.FieldOptions {
+  // field specifies field-level options for typed error payload message fields.
+  //
+  // Example:
+  //
+  //   syntax = "proto3";
+  //   package acme.identity.v1;
+  //
+  //   import "trogon/error/v1alpha1/options.proto";
+  //
+  //   message UserNotFoundError {
+  //     option (trogon.error.v1alpha1.message).template = {
+  //       domain: "identity.acme.com",
+  //       reason: "USER_NOT_FOUND",
+  //       message: "The requested user was not found.",
+  //       code: NOT_FOUND
+  //     };
+  //
+  //     string user_id = 1 [(trogon.error.v1alpha1.field).visibility = VISIBILITY_PUBLIC];
+  //     string internal_trace = 2; // defaults to INTERNAL
+  //   }
+  optional FieldOptions field = 870013;
 }
