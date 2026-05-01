@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/TrogonStack/trogon-proto/compare/v0.9.0...v0.10.0) (2026-05-01)
+
+
+### Features
+
+* **error:** Add field-level visibility option for error metadata ([#39](https://github.com/TrogonStack/trogon-proto/issues/39)) ([ce48712](https://github.com/TrogonStack/trogon-proto/commit/ce48712d1e52045c0d7d109f73f6d936f6ba4363))
+
 ## [0.9.0](https://github.com/TrogonStack/trogon-proto/compare/v0.8.0...v0.9.0) (2026-04-29)
 
 
