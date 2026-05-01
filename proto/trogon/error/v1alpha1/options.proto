@@ -61,9 +61,15 @@ message FieldOptions {
   // When unset, defaults to INTERNAL for safety.
   Visibility visibility = 1;
 
-  // default_value is the static default for this field. When the field is
-  // empty at runtime, this value is used instead.
-  optional string default_value = 2;
+  oneof value_policy {
+    // default_value is a fallback for this field. When the field is
+    // empty at runtime, this value is used instead.
+    string default_value = 2;
+
+    // value is a fixed value for this field. It cannot be overridden
+    // at runtime — the proto struct field is ignored.
+    string value = 3;
+  }
 }
 
 extend google.protobuf.MessageOptions {
@@ -91,6 +97,10 @@ extend google.protobuf.MessageOptions {
   //     string service = 3 [(trogon.error.v1alpha1.field) = {
   //       visibility: VISIBILITY_PUBLIC,
   //       default_value: "compute-api"
+  //     }];
+  //     string region = 4 [(trogon.error.v1alpha1.field) = {
+  //       visibility: VISIBILITY_PUBLIC,
+  //       value: "us-east-1"
   //     }];
   //   }
   optional MessageOptions message = 870012;
