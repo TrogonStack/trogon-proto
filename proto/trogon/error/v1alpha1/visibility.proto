@@ -1,0 +1,28 @@
+syntax = "proto3";
+package trogon.error.v1alpha1;
+
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
+
+// Visibility controls who can see a given error metadata field.
+//
+// This aligns with the three-tier model in the Trogon Error runtime
+// (Trogon.Error.MetadataValue.visibility/0).
+//
+// Default (unspecified) is treated as INTERNAL for safety.
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0;
+
+  // INTERNAL fields are only visible to internal systems and developers.
+  // Use for stack traces, debug identifiers, internal correlation IDs.
+  VISIBILITY_INTERNAL = 1;
+
+  // PRIVATE fields are visible to authenticated users but not the general public.
+  // Use for account-specific context that the caller owns.
+  VISIBILITY_PRIVATE = 2;
+
+  // PUBLIC fields are visible to all users including end consumers.
+  // Use for identifiers the caller already knows or non-sensitive context.
+  VISIBILITY_PUBLIC = 3;
+}

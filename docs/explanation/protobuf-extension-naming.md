@@ -88,7 +88,8 @@ Claim your extension numbers here to prevent conflicts:
 | 870010 | trogon.object_id.v1alpha1 | google.protobuf.EnumValueOptions |
 | 870011 | trogon.stream.v1alpha1 | google.protobuf.EnumValueOptions |
 | 870012 | trogon.error.v1alpha1 | google.protobuf.MessageOptions |
-| 870013–870999 | *Available* | — |
+| 870013 | trogon.error.v1alpha1 | google.protobuf.FieldOptions |
+| 870014–870999 | *Available* | — |
 
 ## Examples in This Repo
 
@@ -106,8 +107,9 @@ trogon/stream/v1alpha1/options.proto
 └─ EnumValueOptions      { prefix, separator }      → enum_value (870011)
 
 trogon/error/v1alpha1/options.proto
-└─ MessageOptions        { template }               → message (870012)
-   └─ Template (nested)  { domain, reason, message, code }
+├─ MessageOptions        { template }               → message (870012)
+│  └─ Template (nested)  { domain, reason, message, code }
+└─ FieldOptions          { visibility }             → field (870013)
 ```
 
 ## Field Number Ranges
