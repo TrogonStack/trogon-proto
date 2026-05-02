@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/TrogonStack/trogon-proto/compare/v0.11.0...v0.12.0) (2026-05-02)
+
+
+### Features
+
+* **error:** Add oneof value_policy to FieldOptions ([#43](https://github.com/TrogonStack/trogon-proto/issues/43)) ([975dfa3](https://github.com/TrogonStack/trogon-proto/commit/975dfa3772f7c84055026df7c0dce2bf8a5cd2c0))
+
 ## [0.11.0](https://github.com/TrogonStack/trogon-proto/compare/v0.10.0...v0.11.0) (2026-05-02)
 
 
