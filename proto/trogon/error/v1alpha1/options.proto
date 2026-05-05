@@ -37,6 +37,17 @@ message MessageOptions {
 
     // help_links provides documentation or support links for this error.
     repeated HelpLink help_links = 6;
+
+    // metadata declares fixed key/value pairs attached to every emission
+    // of this error. Unlike struct fields with FieldOptions.value, these
+    // entries have no wire representation on the payload message — they
+    // are part of the error contract itself.
+    //
+    // Keys must be unique within a template and must not collide with
+    // any field name on the payload message that carries this template
+    // annotation (e.g. ResourceAvailabilityError), not on the Template
+    // wrapper itself.
+    repeated MetadataEntry metadata = 7;
   }
 
   // HelpLink is a single documentation or support link.
@@ -46,6 +57,20 @@ message MessageOptions {
 
     // description is a human-readable label for the link.
     string description = 2;
+  }
+
+  // MetadataEntry declares a fixed metadata pair on a Template.
+  message MetadataEntry {
+    // key is the metadata key. Lowercase snake_case, matching the
+    // convention used for FieldOptions-derived metadata keys.
+    string key = 1;
+
+    // value is the literal value attached at every emission.
+    string value = 2;
+
+    // visibility controls who can see this metadata at runtime.
+    // When unset, defaults to INTERNAL for safety.
+    Visibility visibility = 3;
   }
 
   // template specifies the static error template for this message.
@@ -89,7 +114,11 @@ extend google.protobuf.MessageOptions {
   //       message: "Requested resources are unavailable.",
   //       code: RESOURCE_EXHAUSTED,
   //       visibility: VISIBILITY_PUBLIC,
-  //       help_links: [{url: "https://docs.acme.com/compute", description: "Compute Docs"}]
+  //       help_links: [{url: "https://docs.acme.com/compute", description: "Compute Docs"}],
+  //       metadata: [
+  //         {key: "component", value: "compute", visibility: VISIBILITY_PUBLIC},
+  //         {key: "team",      value: "platform-compute", visibility: VISIBILITY_INTERNAL}
+  //       ]
   //     };
   //
   //     string zone = 1;
