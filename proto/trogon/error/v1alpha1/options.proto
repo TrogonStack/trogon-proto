@@ -65,7 +65,10 @@ message MessageOptions {
     // convention used for FieldOptions-derived metadata keys.
     string key = 1;
 
-    // value is the literal value attached at every emission.
+    // value is the literal value attached at every emission. Template
+    // metadata is fixed by definition, so there is no `default_value`
+    // counterpart here — that distinction belongs to FieldOptions where
+    // a struct field can supply a runtime override.
     string value = 2;
 
     // visibility controls who can see this metadata at runtime.
