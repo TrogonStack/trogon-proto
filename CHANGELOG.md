@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/TrogonStack/trogon-proto/compare/v0.12.0...v0.13.0) (2026-05-05)
+
+
+### Features
+
+* **error:** Allow templates to declare static metadata ([#45](https://github.com/TrogonStack/trogon-proto/issues/45)) ([b63c179](https://github.com/TrogonStack/trogon-proto/commit/b63c17908f0af270cd1932f374102aef03a689af))
+
 ## [0.12.0](https://github.com/TrogonStack/trogon-proto/compare/v0.11.0...v0.12.0) (2026-05-02)
 
 
