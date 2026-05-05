@@ -44,7 +44,9 @@ message MessageOptions {
     // are part of the error contract itself.
     //
     // Keys must be unique within a template and must not collide with
-    // any field name on the enclosing message.
+    // any field name on the payload message that carries this template
+    // annotation (e.g. ResourceAvailabilityError), not on the Template
+    // wrapper itself.
     repeated MetadataEntry metadata = 7;
   }
 
