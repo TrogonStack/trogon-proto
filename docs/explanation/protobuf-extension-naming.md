@@ -108,7 +108,7 @@ trogon/stream/v1alpha1/options.proto
 
 trogon/error/v1alpha1/options.proto
 ├─ MessageOptions        { template }               → message (870012)
-│  └─ Template (nested)  { domain, reason, message, code }
+│  └─ Template (nested)  { domain, reason, message, code, help_links, metadata }
 └─ FieldOptions          { visibility }             → field (870013)
 ```
 
