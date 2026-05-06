@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/TrogonStack/trogon-proto/compare/v0.13.0...v0.13.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* **error:** Align templates with Error Specification ADR ([#48](https://github.com/TrogonStack/trogon-proto/issues/48)) ([53ac7ec](https://github.com/TrogonStack/trogon-proto/commit/53ac7ec9cdb65c26ce62336830942731967d55cf))
+
 ## [0.13.0](https://github.com/TrogonStack/trogon-proto/compare/v0.12.0...v0.13.0) (2026-05-05)
 
 
