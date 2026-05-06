@@ -121,12 +121,12 @@ When projection fails to meet consistency requirements, return appropriate gRPC 
 **Projection Timeout** (timeout exceeded):
 - Status Code: `UNAVAILABLE` (503)
 - Use `google.rpc.ErrorInfo` for structured error details
-- Suggested metadata: min_version, current_version, attempts, elapsed_ms
+- Suggested metadata: `minVersion`, `currentVersion`, `attempts`, `elapsedMs`
 
 **Snapshot Expired** (ExactVersion only, version moved past):
 - Status Code: `FAILED_PRECONDITION` (400)
 - Use `google.rpc.ErrorInfo` for structured error details
-- Suggested metadata: requested_version, current_version
+- Suggested metadata: `requestedVersion`, `currentVersion`
 
 Consider using `google.rpc.Status` with `google.rpc.ErrorInfo` for rich error responses that clients can programmatically handle.
 

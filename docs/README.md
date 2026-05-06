@@ -1,5 +1,6 @@
 # Documentation
 
 - [Document Errors in Proto](how-to/document-errors-in-proto.md)
+- [Google RPC Error Templates](explanation/google-rpc-error-template.md)
 - [Protobuf Extension Naming](explanation/protobuf-extension-naming.md)
 - [Consistency Pattern](explanation/consistency-pattern.md)

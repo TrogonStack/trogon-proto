@@ -102,7 +102,7 @@ message Consistency {
   // - Maximum: 5s (values above should be clamped and logged)
   //
   // If projection doesn't reach required version within timeout, query should return
-  // unavailable error with appropriate error metadata (e.g., projection_timeout).
+  // unavailable error with appropriate error metadata (e.g., projectionTimeout).
   optional google.protobuf.Duration timeout_duration = 3;
 
   // Delay between retry attempts.

@@ -9,38 +9,44 @@ import "trogon/error/v1alpha1/visibility.proto";
 option (elixirpb.file).module_prefix = "TrogonProto.Error.V1Alpha1";
 
 // MessageOptions defines message-level options for error payload messages.
+//
+// These annotations describe the Google RPC rich error details a runtime
+// should emit for this payload. They are not a transport envelope; runtimes
+// adapt the template into google.rpc.Status, google.rpc.ErrorInfo, google.rpc.Help,
+// or equivalent protocol-native details.
 message MessageOptions {
   // Template defines the static error template for a message that can be
-  // adapted into a runtime error representation.
+  // adapted into a runtime Google RPC error representation.
   //
   // These fields are intentionally language-neutral so both Elixir and Go
   // runtimes can derive their native error template APIs from the same proto
   // annotation.
   message Template {
-    // domain identifies the logical owner of the error contract.
+    // domain maps to google.rpc.ErrorInfo.domain.
     // Example: "compute.googleapis.com"
     string domain = 1;
 
-    // reason identifies the stable machine-readable error reason.
+    // reason maps to google.rpc.ErrorInfo.reason.
     // Example: "RESOURCE_AVAILABILITY"
     string reason = 2;
 
-    // message is the default human-readable message template.
+    // message maps to google.rpc.Status.message.
     string message = 3;
 
-    // code is the canonical error code for the template.
+    // code maps to google.rpc.Status.code.
     Code code = 4;
 
     // visibility controls who can see this error at runtime.
-    // When unset, defaults to INTERNAL for safety.
+    // UNSPECIFIED is invalid for emitted error details.
     Visibility visibility = 5;
 
-    // help_links provides documentation or support links for this error.
+    // help_links maps to google.rpc.Help links.
     repeated HelpLink help_links = 6;
 
     // metadata declares fixed key/value pairs attached to every emission
-    // of this error. Unlike struct fields with FieldOptions.value, these
-    // entries have no wire representation on the payload message — they
+    // of this error. Runtimes copy these entries into
+    // google.rpc.ErrorInfo.metadata. Unlike struct fields with FieldOptions.value,
+    // these entries have no wire representation on the payload message — they
     // are part of the error contract itself.
     //
     // Keys must be unique within a template and must not collide with
@@ -61,8 +67,8 @@ message MessageOptions {
 
   // MetadataEntry declares a fixed metadata pair on a Template.
   message MetadataEntry {
-    // key is the metadata key. Lowercase snake_case, matching the
-    // convention used for FieldOptions-derived metadata keys.
+    // key is the metadata key. Use lowerCamelCase to match
+    // google.rpc.ErrorInfo.metadata guidance.
     string key = 1;
 
     // value is the literal value attached at every emission. Template
@@ -72,7 +78,7 @@ message MessageOptions {
     string value = 2;
 
     // visibility controls who can see this metadata at runtime.
-    // When unset, defaults to INTERNAL for safety.
+    // UNSPECIFIED is invalid for emitted error details.
     Visibility visibility = 3;
   }
 
@@ -83,10 +89,13 @@ message MessageOptions {
 }
 
 // FieldOptions defines field-level options for error payload message fields.
+//
+// Runtimes copy payload fields into google.rpc.ErrorInfo.metadata unless a
+// value policy supplies a default or fixed value.
 message FieldOptions {
   // visibility controls who can see this metadata field at runtime.
   //
-  // When unset, defaults to INTERNAL for safety.
+  // UNSPECIFIED is invalid for emitted error details.
   Visibility visibility = 1;
 
   oneof value_policy {
@@ -119,13 +128,12 @@ extend google.protobuf.MessageOptions {
   //       visibility: VISIBILITY_PUBLIC,
   //       help_links: [{url: "https://docs.acme.com/compute", description: "Compute Docs"}],
   //       metadata: [
-  //         {key: "component", value: "compute", visibility: VISIBILITY_PUBLIC},
-  //         {key: "team",      value: "platform-compute", visibility: VISIBILITY_INTERNAL}
+  //         {key: "component", value: "compute", visibility: VISIBILITY_PUBLIC}
   //       ]
   //     };
   //
-  //     string zone = 1;
-  //     string vm_type = 2;
+  //     string zone = 1 [(trogon.error.v1alpha1.field).visibility = VISIBILITY_PUBLIC];
+  //     string vm_type = 2 [(trogon.error.v1alpha1.field).visibility = VISIBILITY_PUBLIC];
   //     string service = 3 [(trogon.error.v1alpha1.field) = {
   //       visibility: VISIBILITY_PUBLIC,
   //       default_value: "compute-api"
@@ -153,11 +161,11 @@ extend google.protobuf.FieldOptions {
   //       domain: "identity.acme.com",
   //       reason: "USER_NOT_FOUND",
   //       message: "The requested user was not found.",
-  //       code: NOT_FOUND
+  //       code: NOT_FOUND,
+  //       visibility: VISIBILITY_PUBLIC
   //     };
   //
   //     string user_id = 1 [(trogon.error.v1alpha1.field).visibility = VISIBILITY_PUBLIC];
-  //     string internal_trace = 2; // defaults to INTERNAL
   //   }
   optional FieldOptions field = 870013;
 }
