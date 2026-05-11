@@ -89,7 +89,9 @@ Claim your extension numbers here to prevent conflicts:
 | 870011 | trogon.stream.v1alpha1 | google.protobuf.EnumValueOptions |
 | 870012 | trogon.error.v1alpha1 | google.protobuf.MessageOptions |
 | 870013 | trogon.error.v1alpha1 | google.protobuf.FieldOptions |
-| 870014–870999 | *Available* | — |
+| 870014 | trogon.nats.micro.v1alpha1 | google.protobuf.ServiceOptions |
+| 870015 | trogon.nats.micro.v1alpha1 | google.protobuf.MethodOptions |
+| 870016–870999 | *Available* | — |
 
 ## Examples in This Repo
 
@@ -110,6 +112,10 @@ trogon/error/v1alpha1/options.proto
 ├─ MessageOptions        { template }               → message (870012)
 │  └─ Template (nested)  { domain, reason, message, code, help_links, metadata }
 └─ FieldOptions          { visibility }             → field (870013)
+
+trogon/nats/micro/v1alpha1/options.proto
+├─ ServiceOptions        { version, description, metadata, content_type } → service (870014)
+└─ MethodOptions         { metadata } → method (870015)
 ```
 
 ## Field Number Ranges
