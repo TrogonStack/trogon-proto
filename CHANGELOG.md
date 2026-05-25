@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.0](https://github.com/TrogonStack/trogon-proto/compare/v0.13.1...v0.14.0) (2026-05-25)
+
+
+### Features
+
+* **actor:** Preserve event causality ([#52](https://github.com/TrogonStack/trogon-proto/issues/52)) ([b5d060f](https://github.com/TrogonStack/trogon-proto/commit/b5d060f2da2003a94b6a47dd62a09ccbf43a41a6))
+* **nats:** Define micro proto contract ([#50](https://github.com/TrogonStack/trogon-proto/issues/50)) ([1a55494](https://github.com/TrogonStack/trogon-proto/commit/1a55494709717775f89efc143a0b4c6a6e445be0))
+
 ## [0.13.1](https://github.com/TrogonStack/trogon-proto/compare/v0.13.0...v0.13.1) (2026-05-06)
 
 
