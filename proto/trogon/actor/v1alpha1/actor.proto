@@ -1,0 +1,39 @@
+syntax = "proto3";
+package trogon.actor.v1alpha1;
+
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Actor.V1Alpha1";
+
+// ActorId identifies a domain actor when the actor type is already implied by
+// the surrounding contract.
+//
+// Use Actor when event consumers need both type and id. Use ActorId only when
+// the identifier alone is the durable domain contract.
+message ActorId {
+  // value is a stable opaque actor identifier.
+  //
+  // This value is not display text and is comparable only within the domain
+  // boundary defined by the surrounding contract.
+  string value = 1;
+}
+
+// Actor identifies the domain entity that caused an event or action.
+//
+// Use this message in event metadata or event payload fields such as
+// created_by, approved_by, or cancelled_by. The application layer maps
+// authenticated principals or system processes into this domain-facing actor.
+message Actor {
+  // type is a stable non-empty token that classifies the actor identifier.
+  //
+  // Examples: "user", "service", "system", "scheduler", "integration".
+  // Service-owned values should be namespaced when generic tokens are not
+  // precise enough.
+  string type = 1;
+
+  // id is a stable opaque identifier scoped by type.
+  //
+  // This value is not display text and should not be assumed to be globally
+  // comparable without the accompanying type.
+  string id = 2;
+}

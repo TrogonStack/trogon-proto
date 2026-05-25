@@ -2,7 +2,7 @@
 
 **Shared Protocol Buffer definitions and custom options for TrogonStack projects.**
 
-**trogon-proto provides reusable protobuf extensions that standardize common patterns across services.** It includes custom options for UUID generation, identity versioning, and other cross-cutting concerns.
+**trogon-proto provides reusable protobuf extensions and value types that standardize common patterns across services.** It includes custom options for UUID generation, domain actor identity, identity versioning, and other cross-cutting concerns.
 
 **Protocol Buffer options let you attach metadata to your definitions that can be read at runtime or during code generation.** This eliminates documentation drift and ensures all services follow the same conventions for critical patterns like deterministic ID generation.
 
