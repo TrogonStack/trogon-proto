@@ -38,4 +38,4 @@ jobs:
         with:
           push: false
           breaking: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'buf:skip:breaking') }}
-          breaking_against: ${{ github.event.repository.clone_url }}#branch=main,ref=HEAD~1
+          breaking_against: ${{ github.event.repository.clone_url }}#branch=main

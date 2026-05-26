@@ -5,16 +5,17 @@ import "elixirpb.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Actor.V1Alpha1";
 
-// ActorId identifies a domain actor when the actor type is already implied by
-// the surrounding contract.
+// ActorId is the stable identifier for a domain actor.
 //
-// Use Actor when event consumers need both type and id. Use ActorId only when
-// the identifier alone is the durable domain contract.
+// The value should be self-describing within the actor namespace, such as a
+// prefixed id or resource-name-like identifier. Use Actor when consumers need the
+// actor class and local id as separate fields.
 message ActorId {
-  // value is a stable opaque actor identifier.
+  // value is the canonical actor identifier.
   //
-  // This value is not display text and is comparable only within the domain
-  // boundary defined by the surrounding contract.
+  // This value is not display text. Consumers should compare the complete
+  // value and should not rely on parsing unless the actor namespace documents
+  // that contract.
   string value = 1;
 }
 
