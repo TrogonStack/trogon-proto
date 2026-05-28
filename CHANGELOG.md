@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/TrogonStack/trogon-proto/compare/v0.14.0...v0.15.0) (2026-05-28)
+
+
+### Features
+
+* **content:** Introduce typed content envelope ([#54](https://github.com/TrogonStack/trogon-proto/issues/54)) ([9b413b5](https://github.com/TrogonStack/trogon-proto/commit/9b413b57646d64f5f894f71d498e694132c3ffaa))
+
 ## [0.14.0](https://github.com/TrogonStack/trogon-proto/compare/v0.13.1...v0.14.0) (2026-05-25)
 
 
