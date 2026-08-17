@@ -37,7 +37,7 @@ message NodeId {
   // reorganized and references never need rewriting. Resolving ancestors is a
   // query against the hierarchy, not string parsing.
   //
-  // The value is self-describing through the object id prefix convention and
+  // The value is self-describing through the resource id prefix convention and
   // carries no collection segment, because a hierarchy has exactly one kind of
   // node and this message already states the kind.
   //
