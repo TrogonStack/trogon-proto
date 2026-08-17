@@ -6,7 +6,7 @@
     { "type": "chore", "section": "Miscellaneous", "hidden": true }
   ],
   "plugins": [{ "type": "sentence-case" }],
-  "signoff": "Straw Hat Team Bot <61149376+sht-bot@users.noreply.github.com>",
+  "signoff": "SHT Bot <61149376+sht-bot@users.noreply.github.com>",
   "packages": {
     ".": {
       "release-type": "simple",
