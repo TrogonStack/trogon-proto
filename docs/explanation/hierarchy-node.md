@@ -36,7 +36,7 @@ Encoding structure in the string looks convenient and fails on the first reorgan
 
 The consequence is that ancestry is a query. Walking from a node toward the root, whether to resolve a name, evaluate inherited policy, or find who is accountable, asks the hierarchy rather than parsing a string. That is the trade that makes a move touch one record instead of every descendant.
 
-## Kinship Is Not Placement
+## Kinship Is Not Position
 
 A tree of same-kind resources, a session spawned by a session or an agent delegating to an agent, is kinship, not a position in the tenant's hierarchy. Kinship uses the other resource's own id type in a qualified field:
 
