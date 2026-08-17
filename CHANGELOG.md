@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.0](https://github.com/TrogonStack/trogon-proto/compare/v0.15.0...v0.16.0) (2026-08-17)
+
+
+### Features
+
+* **hierarchy:** Introduce node identifier for tenant hierarchies ([#56](https://github.com/TrogonStack/trogon-proto/issues/56)) ([859daae](https://github.com/TrogonStack/trogon-proto/commit/859daae86f86241621b47e975ee30bb83c60b38e))
+
+
+### Bug Fixes
+
+* **ci:** Align release sign-off identity with the release bot account ([#59](https://github.com/TrogonStack/trogon-proto/issues/59)) ([b288e78](https://github.com/TrogonStack/trogon-proto/commit/b288e781ea917dc13e242152cbbcea16fec2ddd4))
+
 ## [0.15.0](https://github.com/TrogonStack/trogon-proto/compare/v0.14.0...v0.15.0) (2026-05-28)
 
 
