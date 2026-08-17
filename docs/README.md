@@ -3,6 +3,7 @@
 - [Document Errors in Proto](how-to/document-errors-in-proto.md)
 - [Document NATS Micro Services](how-to/document-nats-micro-services.md)
 - [Actor Identity](explanation/actor-identity.md)
+- [Hierarchy Node](explanation/hierarchy-node.md)
 - [Google RPC Error Templates](explanation/google-rpc-error-template.md)
 - [Protobuf Extension Naming](explanation/protobuf-extension-naming.md)
 - [Consistency Pattern](explanation/consistency-pattern.md)

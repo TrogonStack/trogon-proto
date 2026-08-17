@@ -8,7 +8,7 @@ option (elixirpb.file).module_prefix = "TrogonProto.Stream.V1Alpha1";
 
 // EnumValueOptions defines enum-value-level options for stream identity prefixes.
 message EnumValueOptions {
-  // The stream prefix for this aggregate (e.g., "order", "account", "fanid").
+  // The stream prefix for this aggregate (e.g., "order", "account", "invoice").
   string prefix = 1;
 
   // Separator between prefix and identity value. Defaults to ":" if not set.
