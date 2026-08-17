@@ -1,0 +1,47 @@
+syntax = "proto3";
+package trogon.hierarchy.v1alpha1;
+
+import "elixirpb.proto";
+
+option (elixirpb.file).module_prefix = "TrogonProto.Hierarchy.V1Alpha1";
+
+// NodeId identifies one node of a tenant's hierarchy.
+//
+// A node is a position in the tenant's tree that resources attach to. It is
+// untyped on purpose: tenants model their own structure, and words such as
+// "project" or "team" are labels on a node rather than kinds the platform
+// interprets. Policy attaches to a node and applies to everything at or below
+// it, and name resolution starts at a node and walks toward the root.
+//
+// Use this message for the `parent` field on any resource that has a position
+// in the tree:
+//
+//   message Agent {
+//     string agent_id = 1;
+//     trogon.hierarchy.v1alpha1.NodeId parent = 2;
+//   }
+//
+// The field is named for its role, `parent`, while the type states what the
+// role points at. Do not spell the field `parent_id`; the id suffix belongs to
+// the type.
+//
+// Do not use NodeId for kinship between resources of the same kind, such as a
+// session spawned by a session. Kinship uses the other resource's own id type
+// in a qualified field, `parent_session`.
+message NodeId {
+  // value is the node identifier, one node and nothing more.
+  //
+  // It is never a path and never an ancestry: `node_01h9x`, not
+  // `acme/backend/ml`. Structure lives in the hierarchy's audited add, move,
+  // and remove operations, so a node keeps its identifier when the tree is
+  // reorganized and references never need rewriting. Resolving ancestors is a
+  // query against the hierarchy, not string parsing.
+  //
+  // The value is self-describing through the object id prefix convention and
+  // carries no collection segment, because a hierarchy has exactly one kind of
+  // node and this message already states the kind.
+  //
+  // This value is not display text. Consumers compare the complete value and
+  // do not parse it.
+  string value = 1;
+}

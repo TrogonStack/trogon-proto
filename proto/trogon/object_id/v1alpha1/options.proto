@@ -8,7 +8,7 @@ option (elixirpb.file).module_prefix = "TrogonProto.ObjectId.V1Alpha1";
 
 // EnumValueOptions defines enum-value-level options for object ID types.
 message EnumValueOptions {
-  // The object type prefix for this ID (e.g., "review", "order", "fanid").
+  // The object type prefix for this ID (e.g., "review", "order", "invoice").
   string object_type = 1;
 
   // Separator between prefix and id value. Defaults to "_" if not set.
