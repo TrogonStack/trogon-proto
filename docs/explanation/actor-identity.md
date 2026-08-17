@@ -77,9 +77,9 @@ The protobuf JSON shape for `ActorId` is:
 
 Changing a field from `ActorId` to `Actor` later changes the protobuf and JSON shape for that field. Choose `Actor` up front when consumers need separate actor fields rather than one canonical actor identifier.
 
-## Object ID Values
+## Resource ID Values
 
-An actor id may use the same string format as an object id, but the field type should follow the domain role, not the string format.
+An actor id may use the same string format as a resource id, but the field type should follow the domain role, not the string format.
 
 Use `Actor` or `ActorId` when the field answers who caused the event:
 
@@ -97,7 +97,7 @@ message AccountCreated {
 }
 ```
 
-Do not use `ActorId` for fields that identify the object being created, updated, or referenced. Those fields should use the domain object's own id type or string field:
+Do not use `ActorId` for fields that identify the resource being created, updated, or referenced. Those fields should use the resource's own id type or string field:
 
 ```protobuf
 message AccountCreated {
@@ -114,4 +114,4 @@ message UserProfileUpdated {
 }
 ```
 
-In that case, the value is still an actor identifier in the event, not a general object reference. Prefer self-describing values in shared event envelopes so replay, projection, and audit consumers do not need external context to interpret the actor.
+In that case, the value is still an actor identifier in the event, not a general resource reference. Prefer self-describing values in shared event envelopes so replay, projection, and audit consumers do not need external context to interpret the actor.
