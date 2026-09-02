@@ -20,7 +20,7 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          BUF_TOKEN: ${{ secrets.SECRETS_VAULT }}/BUF_TOKEN
+          BUF_TOKEN: ${{ secrets.SECRETS_VAULT_ID }}/x6x5spmc3nstpjijjowubju5yq/BUF_TOKEN
 
       - uses: bufbuild/buf-action@8f4a1456a0ab6a1eb80ba68e53832e6fcfacc16c # v1
         with:
