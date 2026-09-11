@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/TrogonStack/trogon-proto/compare/v0.16.0...v0.17.0) (2026-09-11)
+
+
+### Features
+
+* **env:** Derive environment values from an ordered pipeline ([#61](https://github.com/TrogonStack/trogon-proto/issues/61)) ([4b141cd](https://github.com/TrogonStack/trogon-proto/commit/4b141cd62c9c4e5da64f29676e8f1dc28c2a1ed5))
+
 ## [0.16.0](https://github.com/TrogonStack/trogon-proto/compare/v0.15.0...v0.16.0) (2026-08-17)
 
 
