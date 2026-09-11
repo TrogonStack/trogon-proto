@@ -48,6 +48,12 @@ message Constraints {
   //
   // Only valid on `bytes` and `string` fields. On any other field type it is a
   // schema error.
+  //
+  // INVARIANT: exactly one `bound` must be set. An empty `ByteSize` satisfies
+  // the non-empty `Constraints` rule while declaring no predicate at all, so it
+  // is a schema error and must be rejected. Left accepted, a `Decode.accept` of
+  // `{byte_size: {}}` would have nothing to select on and generators would
+  // diverge on which candidate wins.
   message ByteSize {
     // Range is an inclusive bound. At least one of `min` or `max` must be set,
     // and when both are set `min` must be less than or equal to `max`.
@@ -377,6 +383,7 @@ message FieldOptions {
 // - `Decode.accept` is required when `any_of` holds more than one candidate
 // - `Constraints` must set at least one field (an empty `Constraints` is a schema error)
 // - `Constraints.byte_size` is only valid on `bytes` and `string` fields
+// - `Constraints.ByteSize` must set exactly one `bound` (an empty `ByteSize` is a schema error)
 // - `Constraints.ByteSize.Range` must set at least one bound, with `min` <= `max` when both are set
 // - Failure messages may name the field, the environment variable, the
 //   candidates attempted, and the observed byte size. They must never include

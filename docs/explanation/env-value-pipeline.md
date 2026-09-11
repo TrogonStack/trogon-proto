@@ -66,7 +66,11 @@ base64 or as raw bytes, requiring 32 bytes either way.
 | `split` | turns the whole value into elements | repeated fields only |
 | `trim` | removes leading and trailing characters | text |
 | `decode` | turns text into bytes | `bytes` and `string` fields |
-| `require` | validates, produces no new value | any field |
+| `require` | validates, produces no new value | `bytes` and `string` fields |
+
+`require` is limited to `bytes` and `string` fields because `byte_size` is the
+only constraint `Constraints` defines today. The step generalizes when
+`Constraints` grows.
 
 `split` is the only step that changes how many values are in play. Steps before
 it see the whole environment value; steps after it run once per element. A
