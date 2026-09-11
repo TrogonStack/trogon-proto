@@ -8,21 +8,173 @@ import "trogon/env/v1alpha1/visibility.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Env.V1Alpha1";
 
-// Trim specifies how to remove leading and trailing characters from each value
-// after splitting by `split_delimiter`. Internal characters are never affected.
+// Split turns the single environment value into the elements of a repeated
+// field.
 //
-// INVARIANT: If `trim` is set (present), exactly one of its oneof fields must be set.
-// An empty `Trim` (with `by` unset) is a schema error and must be rejected.
+// It is the only step that changes how many values are in play, which is why
+// steps before it see the whole environment value and steps after it run once
+// per element.
+message Split {
+  // `delimiter` separates elements. It must be non-empty; an empty delimiter is
+  // a schema error.
+  // Example: `delimiter = ","` turns `"8080,8081"` into `["8080", "8081"]`
+  string delimiter = 1;
+}
+
+// Trim removes leading and trailing characters from a value. Internal
+// characters are never affected.
+//
+// INVARIANT: exactly one of its oneof fields must be set. An empty `Trim`
+// (with `by` unset) is a schema error and must be rejected.
 message Trim {
   oneof by {
-    // `unicode_whitespace` enables trimming of Unicode whitespace
-    // (spaces, tabs, newlines, etc.) from each split value.
-    // Example: `" hello "` split by `","` → `["hello"]`
+    // `unicode_whitespace` trims Unicode whitespace (spaces, tabs, newlines).
+    // Example: `" hello "` becomes `"hello"`
     google.protobuf.Empty unicode_whitespace = 1;
 
-    // `chars` enables trimming of specified characters from leading and trailing positions.
-    // Example: `"a,aab,aa"` split by `","` → `["", "b", ""]`
+    // `chars` trims the given characters from leading and trailing positions.
+    // Example: `"*user*"` with `chars = "*"` becomes `"user"`
     string chars = 2;
+  }
+}
+
+// Constraints declares the accepted shape of a value.
+//
+// INVARIANT: at least one field must be set. An empty `Constraints` is a schema
+// error and must be rejected.
+message Constraints {
+  // ByteSize constrains the byte length of a value. For text this is the UTF-8
+  // byte length, not the character count.
+  //
+  // Only valid on `bytes` and `string` fields. On any other field type it is a
+  // schema error.
+  message ByteSize {
+    // Range is an inclusive bound. At least one of `min` or `max` must be set,
+    // and when both are set `min` must be less than or equal to `max`.
+    message Range {
+      optional uint32 min = 1;
+      optional uint32 max = 2;
+    }
+
+    oneof bound {
+      // `exact` requires the value to be exactly this many bytes.
+      uint32 exact = 1;
+
+      // `range` requires the byte length to fall inside the bound.
+      Range range = 2;
+    }
+  }
+
+  optional ByteSize byte_size = 1;
+}
+
+// Decode turns text into bytes.
+//
+// Environment variables are always text, so a `bytes` field needs a declared
+// decoding. Only valid on `bytes` and `string` fields.
+message Decode {
+  // Base64 decodes the value as RFC 4648 base64.
+  message Base64 {
+    // Alphabet selects the RFC 4648 alphabet.
+    enum Alphabet {
+      // UNSPECIFIED is a schema error. The alphabet decides which inputs are
+      // accepted, so it must be declared rather than defaulted.
+      ALPHABET_UNSPECIFIED = 0;
+
+      // STANDARD is the RFC 4648 section 4 alphabet (`+` and `/`).
+      ALPHABET_STANDARD = 1;
+
+      // URL_SAFE is the RFC 4648 section 5 alphabet (`-` and `_`).
+      ALPHABET_URL_SAFE = 2;
+    }
+
+    // Padding declares whether `=` padding is expected on the input.
+    enum Padding {
+      // UNSPECIFIED is a schema error, for the same reason as
+      // ALPHABET_UNSPECIFIED.
+      PADDING_UNSPECIFIED = 0;
+
+      // REQUIRED rejects unpadded input.
+      PADDING_REQUIRED = 1;
+
+      // ABSENT rejects padded input.
+      PADDING_ABSENT = 2;
+    }
+
+    Alphabet alphabet = 1;
+    Padding padding = 2;
+  }
+
+  // Hex decodes the value as base16. Both upper and lower case are accepted.
+  message Hex {}
+
+  // Utf8 takes the value's own bytes with no transformation. It always
+  // succeeds, so it is only meaningful as the last candidate.
+  message Utf8 {}
+
+  // Candidate is one way to read the text.
+  //
+  // INVARIANT: exactly one of its oneof fields must be set. An empty
+  // `Candidate` (with `as` unset) is a schema error and must be rejected.
+  message Candidate {
+    oneof as {
+      Base64 base64 = 1;
+      Hex hex = 2;
+      Utf8 utf8 = 3;
+    }
+  }
+
+  // `any_of` lists the readings to attempt, in order. Exactly one is used: the
+  // first whose output satisfies `accept`. Every candidate receives the same
+  // input, so this is a choice, not a sequence.
+  //
+  // EDGE CASES:
+  // - `any_of` must be non-empty and must not repeat a candidate.
+  // - `utf8` always succeeds, so any candidate after it is unreachable. `utf8`
+  //   must be the last candidate when present.
+  repeated Candidate any_of = 1;
+
+  // `accept` is the rule that picks among `any_of`. It is required when
+  // `any_of` holds more than one candidate, because otherwise the choice has
+  // nothing to discriminate on.
+  //
+  // A lenient input needs this. A 32 character ASCII key is frequently also
+  // valid base64 that decodes to 24 bytes, so "base64 or raw" only has one
+  // correct reading once the expected size is known:
+  //
+  //   decode: {
+  //     any_of: [
+  //       {base64: {alphabet: ALPHABET_STANDARD, padding: PADDING_REQUIRED}},
+  //       {utf8: {}}
+  //     ]
+  //     accept: {byte_size: {exact: 32}}
+  //   }
+  //
+  // Stating the size here rather than in a following `require` step is what
+  // keeps it written once instead of twice.
+  optional Constraints accept = 2;
+}
+
+// Step is one operation in the pipeline that derives a field value from an
+// environment variable.
+//
+// INVARIANT: exactly one of its oneof fields must be set. An empty `Step`
+// (with `op` unset) is a schema error and must be rejected.
+message Step {
+  oneof op {
+    // `split` turns the whole value into elements. See `Split`.
+    Split split = 1;
+
+    // `trim` removes surrounding characters from text. See `Trim`.
+    Trim trim = 2;
+
+    // `decode` turns text into bytes. See `Decode`.
+    Decode decode = 3;
+
+    // `require` validates the value and produces no new value. Use it when
+    // there is nothing to choose between; `Decode.accept` covers the case
+    // where the same rule also selects a reading.
+    Constraints require = 4;
   }
 }
 
@@ -35,36 +187,67 @@ message EnvVarOption {
   // When unset (nil), the field is required and will raise if missing.
   // When set to any string (including ""), the field is optional with that default.
   //
-  // For repeated fields with `split_delimiter` and/or `trim`:
-  // - `default_value` is NOT split or trimmed. Use it as-is when env var is absent.
-  // - Provide `default_value` as pre-split, pre-trimmed string.
-  // Example: `repeated int32` with `split=","` and `default_value="8080,8081"`
-  //   When absent, becomes `[8080, 8081]` (no re-processing).
+  // The default substitutes for the environment value at the start of the
+  // pipeline and then runs through every step, so it is written exactly as an
+  // operator would write the variable. There is no second spelling to learn and
+  // no step that treats defaults specially.
+  //
+  // Example: `repeated int32` with a `split` step of `delimiter = ","` and
+  // `default_value = "8080,8081"` yields `[8080, 8081]`.
   optional string default_value = 2;
 
-  // `split_delimiter` splits the environment variable value into multiple items
-  // for repeated fields. Only applicable for repeated field types.
-  // If unset on a repeated field, the entire value is treated as a single item.
+  // `steps` is the ordered pipeline that derives the field value from the
+  // environment variable. Order is the contract: steps run top to bottom.
+  //
+  // PROCESSING MODEL:
+  //   1. Read the environment variable, or `default_value` when it is absent.
+  //      A missing variable with no default fails to load.
+  //   2. Run each step in `steps`, in order.
+  //   3. Cast the result to the field type.
+  //
+  // `split` is the only step that changes how many values are in play. Steps
+  // before it see the whole environment value; steps after it run once per
+  // element. A non-repeated field has no `split`, so every step sees the single
+  // value.
+  //
+  // Example, a 32 byte key supplied either base64 encoded or as raw bytes, and
+  // tolerant of the trailing newline that `$(cat key.b64)` leaves behind:
+  //
+  //   steps: [
+  //     {trim: {unicode_whitespace: {}}},
+  //     {decode: {
+  //       any_of: [
+  //         {base64: {alphabet: ALPHABET_STANDARD, padding: PADDING_REQUIRED}},
+  //         {utf8: {}}
+  //       ]
+  //       accept: {byte_size: {exact: 32}}
+  //     }}
+  //   ]
   //
   // EDGE CASES:
-  // - `split_delimiter` must be non-empty if set. Empty string is a schema error.
-  // - `trim` only applies when `split_delimiter` is set. If `trim` is set but
-  //   `split_delimiter` is unset, code generators must reject this as a schema error.
-  //
-  // Examples (`repeated int32`):
-  //   `split_delimiter = ","` → `"8080,8081,8082"` becomes `[8080, 8081, 8082]`
-  //   `split_delimiter = ";"` → `"tag1;tag2;tag3"` becomes `[tag1, tag2, tag3]`
-  optional string split_delimiter = 4;
+  // - Each `Step` must set exactly one `op`. An empty `Step` is a schema error.
+  // - At most one `split` step, and it must be first. `split` is only valid on
+  //   repeated fields.
+  // - `trim` consumes text, so every `trim` step must precede the `decode` step.
+  // - At most one `decode` step. `decode` and `Constraints.byte_size` are only
+  //   valid on `bytes` and `string` fields.
+  // - Setting `steps` together with the deprecated `split_delimiter` or `trim`
+  //   is a schema error. Use one shape or the other.
+  repeated Step steps = 6;
 
-  // `trim` optionally specifies how to trim each split value.
-  // Only applicable when `split_delimiter` is set.
-  // If unset, no trimming is performed.
-  // If set, exactly one of its fields must be present (schema invariant).
+  // `split_delimiter` splits the environment variable value into multiple items
+  // for repeated fields.
   //
-  // PROCESSING ORDER: Split first (by `split_delimiter`), then trim each value.
-  // Example with `split_delimiter=","` and `trim.unicode_whitespace`:
-  //   `"a, b , c"` → split → `["a", " b ", " c"]` → trim → `["a", "b", "c"]`
-  optional Trim trim = 5;
+  // Deprecated: use a `split` step in `steps` instead. Kept for one release so
+  // existing annotations keep working.
+  optional string split_delimiter = 4 [deprecated = true];
+
+  // `trim` specifies how to trim each split value.
+  //
+  // Deprecated: use a `trim` step in `steps` instead. The step form does not
+  // depend on splitting, so it also covers non-repeated fields, which this
+  // field never could.
+  optional Trim trim = 5 [deprecated = true];
 
   // `tags` are arbitrary key-value pairs for metadata not known ahead of time.
   // Common keys: `"team"`, `"rotation_policy"`, `"pci-dss"`, `"validation"`, `"env"`.
@@ -119,18 +302,27 @@ message FieldOptions {
 //     // Repeated integers split by comma, trimmed
 //     // ENV: ALLOWED_PORTS="8080, 8081, 8082"
 //     repeated int32 allowed_ports = 4 [
-//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
-//       (trogon.env.v1alpha1.field).env_var.default_value = "8080",
-//       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
-//       (trogon.env.v1alpha1.field).env_var.trim.unicode_whitespace = {}
+//       (trogon.env.v1alpha1.field).env_var = {
+//         visibility: VISIBILITY_PLAINTEXT
+//         default_value: "8080"
+//         steps: [
+//           {split: {delimiter: ","}},
+//           {trim: {unicode_whitespace: {}}}
+//         ]
+//       }
 //     ];
 //
 //     // Required repeated strings - must be set in environment
 //     // ENV: BANNED_USERS="*user1*, *user2*, *user3*"
 //     repeated string banned_users = 5 [
-//       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
-//       (trogon.env.v1alpha1.field).env_var.split_delimiter = ",",
-//       (trogon.env.v1alpha1.field).env_var.trim.chars = "*"
+//       (trogon.env.v1alpha1.field).env_var = {
+//         visibility: VISIBILITY_PLAINTEXT
+//         steps: [
+//           {split: {delimiter: ","}},
+//           {trim: {unicode_whitespace: {}}},
+//           {trim: {chars: "*"}}
+//         ]
+//       }
 //     ];
 //
 //     // Enum field - value must match the enum name exactly
@@ -139,29 +331,65 @@ message FieldOptions {
 //       (trogon.env.v1alpha1.field).env_var.visibility = VISIBILITY_PLAINTEXT,
 //       (trogon.env.v1alpha1.field).env_var.default_value = "LOG_LEVEL_INFO"
 //     ];
+//
+//     // Required 32 byte key, accepted as base64 or as raw bytes, where the
+//     // declared size decides which reading of the input is correct
+//     // ENV: TOKEN_SIGNING_KEY="3q2+796tvu/erb7v3q2+796tvu/erb7v3q2+796tvu8="
+//     bytes token_signing_key = 7 [
+//       (trogon.env.v1alpha1.field).env_var = {
+//         visibility: VISIBILITY_SECRET
+//         steps: [
+//           {trim: {unicode_whitespace: {}}},
+//           {decode: {
+//             any_of: [
+//               {base64: {alphabet: ALPHABET_STANDARD, padding: PADDING_REQUIRED}},
+//               {utf8: {}}
+//             ]
+//             accept: {byte_size: {exact: 32}}
+//           }}
+//         ]
+//       }
+//     ];
 //   }
 //
 // Code generators (Elixir, Go, Python, etc.) read this metadata to:
 // - Load values from System environment variables
 // - Validate required vs optional fields
 // - Generate documentation and .env examples
-// - Split repeated fields and cast each value to the correct type
-// - Trim leading/trailing characters based on `trim` configuration
+// - Run `steps` in order and cast each value to the correct type
+// - Choose among `Decode.any_of` using `Decode.accept`
+// - Reject values that violate a `require` step
 // - Mask secrets in logs based on `visibility`
 // - Track compliance metadata (PCI-DSS, rotation policies, etc.)
 //
 // Schema invariants and edge cases enforced by code generators:
 // - `default_value` unset (nil) = required field, raises if env var missing
 // - `default_value` set (any string, including "") = optional field with that default
-// - `split_delimiter` must be non-empty if set (empty string is a schema error)
-// - If `trim` is set, `split_delimiter` must also be set (trim without split is a schema error)
-// - If `trim` is set, its `by` oneof must have exactly one field set (not unset, not multiple)
-// - `Trim` messages with empty `by` are schema errors and must be rejected with clear errors
-// - Processing order for repeated fields: split (by delimiter) → trim each value → type cast
-// - `default_value` for repeated fields: NOT split/trimmed, used as-is when env var absent
+// - `default_value` runs through `steps` exactly like an environment value
+// - `steps` must not be combined with `split_delimiter` or `trim`
+// - Each `Step` must set exactly one `op` (an empty `Step` is a schema error)
+// - At most one `split` step, it must be first, and it is only valid on repeated fields
+// - `Split.delimiter` must be non-empty (empty string is a schema error)
+// - Every `trim` step must precede the `decode` step, because `trim` consumes text
+// - At most one `decode` step; `decode` is only valid on `bytes` and `string` fields
+// - `Decode.any_of` must be non-empty, must not repeat a candidate, and `utf8`
+//   must be last when present
+// - `Decode.accept` is required when `any_of` holds more than one candidate
+// - `Constraints` must set at least one field (an empty `Constraints` is a schema error)
+// - `Constraints.byte_size` is only valid on `bytes` and `string` fields
+// - `Constraints.ByteSize.Range` must set at least one bound, with `min` <= `max` when both are set
+// - Failure messages may name the field, the environment variable, the
+//   candidates attempted, and the observed byte size. They must never include
+//   the value or any part of it unless `visibility` is `VISIBILITY_PLAINTEXT`
 // - Enum fields: the env var value must match the enum value name exactly (e.g., "LOG_LEVEL_DEBUG").
 //   `default_value` must also be the exact enum value name. Code generators cast by name lookup.
 //   TODO: consider supporting numeric values (e.g., "1") and case-insensitive matching in the future.
+//
+// Undefined today: `map` fields. Loading `FOO="a:1,b:2"` into a
+// `map<string, string>` needs two splits at different types, entries out of the
+// whole value and then a key/value pair out of each entry, which is a step type
+// that does not exist yet. Generators must reject `steps` on map fields rather
+// than improvise.
 //
 extend google.protobuf.FieldOptions {
   optional FieldOptions field = 870003;
