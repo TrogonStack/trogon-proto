@@ -7,13 +7,20 @@ import "google/protobuf/duration.proto";
 
 option (elixirpb.file).module_prefix = "TrogonProto.Consistency.V1Alpha1";
 
-// Configuration for read-your-writes consistency guarantees in eventual consistency systems.
+// Configuration for consistency guarantees in eventual consistency systems.
 //
-// Used in query operations to wait for projections/read models to catch up to a specific version
-// after a write operation. This enables clients to immediately read their own writes despite
-// projection lag in CQRS/Event Sourcing architectures.
+// Used in query operations to control how a query relates to the position of
+// the event log, from accepting whatever a projection currently reflects, to
+// waiting for a specific position, to waiting for the head of the log as
+// observed at request time.
 //
 // ## Consistency Modes
+//
+// ### MinimizeLatency (Default - No Freshness Guarantee)
+// Returns whatever a projection currently reflects, with no wait and no freshness
+// bound. Serving a cached or slightly stale result is expected. This is also what
+// happens when `requirement` is left unset; the explicit form exists so intent is
+// visible in code, logs, and tracing.
 //
 // ### MinVersion (Recommended - Read-Your-Writes)
 // Waits for projection to reach AT LEAST the specified version. Will use newer data if available.
@@ -23,14 +30,20 @@ option (elixirpb.file).module_prefix = "TrogonProto.Consistency.V1Alpha1";
 // Waits for projection to reach EXACTLY the specified version. Rejects if version is newer.
 // Use this only when you need reproducible queries at a specific point-in-time (audits, reports).
 //
+// ### FullyConsistent (Strongest - Head of Log)
+// Waits for projection to reach the position of the event log observed by the server
+// at the moment the request arrived. Use this when a caller holds no version but any
+// staleness is unacceptable.
+//
 // ## Usage Pattern
 //
 // 1. Client performs mutation (e.g., CreateOrder, UpdateInventory)
-// 2. Server returns stream_version (e.g., version 5)
+// 2. Server returns the version (e.g., version 5), using the counter the target projection checkpoints on
 // 3. Client immediately queries with Consistency:
 //    - min_version { version: 5 }  (recommended - read-your-writes)
 //    - exact_version { version: 5 }  (strict - reproducible snapshot)
-// 4. Server retries query until projection reaches version or timeout
+//    - fully_consistent {}  (strongest - no version held by the client)
+// 4. Server retries query until projection reaches the required position or timeout
 //
 // ## Example
 //
@@ -38,7 +51,7 @@ option (elixirpb.file).module_prefix = "TrogonProto.Consistency.V1Alpha1";
 // // Mutation response
 // message CreateOrderResponse {
 //   string order_id = 1;
-//   uint64 stream_version = 2;  // Returns: 5
+//   int64 version = 2;  // Returns: 5, the counter the target projection checkpoints on
 // }
 //
 // // Read-your-writes (recommended)
@@ -68,11 +81,18 @@ option (elixirpb.file).module_prefix = "TrogonProto.Consistency.V1Alpha1";
 //
 // ## Reference
 //
-// Inspired by SpiceDB's Consistency patterns (at_least_as_fresh and at_exact_snapshot modes).
+// Inspired by SpiceDB's Consistency patterns. SpiceDB has four comparable modes:
+// minimize_latency, at_least_as_fresh, at_exact_snapshot, and fully_consistent.
 // See: https://authzed.com/docs/spicedb/concepts/consistency
 message Consistency {
-  // Which consistency mode to use
+  // Which consistency mode to use. Leaving this unset is equivalent to minimize_latency.
   oneof requirement {
+    // Accept whatever position a projection currently reflects. No wait, no freshness bound.
+    //
+    // This is also the behavior when requirement is left unset entirely. Set it explicitly
+    // when the intent should be visible in code, logs, and tracing.
+    MinimizeLatency minimize_latency = 5;
+
     // Wait for projection to reach AT LEAST this version (version >= X).
     //
     // Recommended for read-your-writes consistency. If projection has already
@@ -90,12 +110,19 @@ message Consistency {
     //
     // Use only for: audit queries, reports requiring exact historical state.
     ExactVersion exact_version = 2;
+
+    // Wait for projection to reach the position of the event log observed by the
+    // server at the moment the request arrived.
+    //
+    // Use when the caller holds no version and any staleness is unacceptable.
+    // If the caller does hold a version, prefer min_version instead.
+    FullyConsistent fully_consistent = 6;
   }
 
   // Maximum time to wait for projection to catch up.
   //
-  // Applies to any requirement mode above. If requirement is not set (eventual consistency),
-  // this field is ignored.
+  // Applies to any requirement mode above. If requirement is not set, or is
+  // minimize_latency, this field is ignored.
   //
   // Recommended server limits:
   // - Default: 1s (if not provided)
@@ -107,8 +134,8 @@ message Consistency {
 
   // Delay between retry attempts.
   //
-  // Applies to any requirement mode above. If requirement is not set (eventual consistency),
-  // this field is ignored.
+  // Applies to any requirement mode above. If requirement is not set, or is
+  // minimize_latency, this field is ignored.
   //
   // Recommended server limits:
   // - Default: 100ms (if not provided)
@@ -119,20 +146,30 @@ message Consistency {
   optional google.protobuf.Duration delay_duration = 4;
 }
 
+// Accept whatever position a projection currently reflects, with no freshness bound.
+message MinimizeLatency {}
+
 // Wait for projection to be at least as fresh as the specified version.
 message MinVersion {
-  // Minimum stream version required (projection.version >= this).
+  // Minimum position required (projection.position >= this).
   //
-  // Client should use the stream_version returned from their previous mutation.
+  // Either a stream version or a global log position, whichever counter the
+  // target projection checkpoints on. Client should use the version returned
+  // from their previous mutation.
   // Server should retry query until projection reaches or exceeds this version.
   int64 version = 1;
 }
 
 // Wait for projection to reach exactly the specified version (strict snapshot).
 message ExactVersion {
-  // Exact stream version required (projection.version == this).
+  // Exact position required (projection.position == this).
   //
+  // Same counter rule as MinVersion.
   // Server should retry until projection reaches this version, or fail with
   // failed precondition error if projection has moved past this version.
   int64 version = 1;
 }
+
+// Wait for projection to reach the position of the event log observed by the
+// server at the moment the request arrived.
+message FullyConsistent {}
