@@ -20,6 +20,25 @@ A **projection checkpoint** is the position a read model has processed up to. A 
 
 This gives a rule that every service using `Consistency` must follow: the `version` a client passes in `min_version` or `exact_version` must be the same counter the target projection checkpoints on. A service must document, per query, which counter it expects. The mutation response that hands the client a version must return that same counter, not the other one. Passing a stream version to a query whose projection checkpoints on global position (or the reverse) produces a request that can never be satisfied, or one that is satisfied by the wrong events.
 
+### Where the version comes from
+
+The write side has to hand the client the counter the target projection checkpoints on, and how that counter becomes available depends on what the event store returns when a stream is appended to.
+
+Some stores return every counter on append. EventStoreDB's append result carries the stream revision of the last appended event and its position in the `$all` log, so a mutation handler can return either without a second read. Each event delivered by a subscription carries the same pair, and a projection records whichever one it consumes: a catch-up subscription to `$all` checkpoints on the log position, a subscription to a single stream checkpoints on the stream revision. When the store exposes the log position as a composite (EventStoreDB's commit and prepare positions), the commit position is the usual choice for the `int64` value, with the checkpoint recorded once every event sharing that commit position has been processed.
+
+Some stores return only the stream version on append. Commanded's dispatch result exposes the aggregate version, while the global event number appears only on the recorded events later delivered to event handlers and projectors. Commanded's Ecto projections checkpoint on that global event number. A mutation handler that needs it reads the appended events back from the aggregate's stream and takes the global number of the last one, which is one extra read per mutation taken on the write path.
+
+The translation can instead happen at query time. The mutation returns the stream version, and the query handler locates that event in its stream to learn the global position before comparing with the checkpoint. This keeps the write path free of extra reads at the cost of one read per consistent query, and it lets the API contract speak only in stream versions, which is simpler for clients.
+
+Principles that hold regardless of store:
+
+- Whatever counter crosses the API boundary, the server must be able to compare it with the projection checkpoint without guessing. Document which counter each mutation returns and which counter each query expects.
+- Prefer returning the counter the projection checkpoints on directly when the store provides it on append.
+- When the store provides only the stream version, choose one translation point per service, write path or query path, and keep it consistent.
+- The counter is a log position, not a clock. Never derive it from timestamps, and never compare counters from different stores or different event logs.
+
+Some frameworks also offer a write-side alternative. Commanded can block a dispatch until strongly consistent handlers have processed the new events, which removes projection lag for the caller at the cost of slower writes. This package expresses the same need on the read side instead, so that each query pays only for the consistency it asks for. A service may use either, but should not wait on both sides for the same projection.
+
 The `version` field is `int64`, deliberately. It is not an opaque token; it is the actual event sourcing position, and a client is free to compare two versions or reason about their ordering. This is unlike SpiceDB's `ZedToken`, which is opaque by design and only usable as an input to a later request, never inspected or compared by the client.
 
 ## Modes
@@ -42,7 +61,7 @@ Setting `minimize_latency` explicitly behaves exactly like leaving `requirement`
 
 - **Guarantee**: the response reflects every event up to and including `version`, and possibly later events too.
 - **Input**: `version`, taken from a previous mutation response.
-- **Waits**: yes, until the projection checkpoint is greater than or equal to `version`, bounded by `timeout_duration` and retried every `delay_duration`.
+- **Waits**: yes, until a result reflecting a position greater than or equal to `version` is available, bounded by `timeout_duration` and retried every `delay_duration`.
 - **Cache allowed**: only if the cached result's position is greater than or equal to `version`.
 - **Output**: the result.
 - **Failure**: `UNAVAILABLE` if `timeout_duration` elapses before the projection catches up.
@@ -52,17 +71,17 @@ Setting `minimize_latency` explicitly behaves exactly like leaving `requirement`
 
 - **Guarantee**: the response reflects exactly the events up to `version`, and nothing after it.
 - **Input**: `version`.
-- **Waits**: yes, until the projection checkpoint equals `version`, bounded and retried the same way as `min_version`.
+- **Waits**: yes, until a result reflecting exactly `version` is available, bounded and retried the same way as `min_version`.
 - **Cache allowed**: only if the cached result is for exactly that position, not a later one.
 - **Output**: the result.
-- **Failure**: `UNAVAILABLE` if `timeout_duration` elapses. `FAILED_PRECONDITION` if the projection checkpoint has already moved past `version` and the server cannot reconstruct state as of that position (the snapshot has expired).
+- **Failure**: `UNAVAILABLE` if `timeout_duration` elapses. `FAILED_PRECONDITION` if the projection has already moved past `version` and the server cannot reconstruct state as of that position (the snapshot has expired).
 - **When to use**: multiple reads that must agree with each other, such as paginating a report, computing a diff between two calls, or an audit. Not a tool for freshness. Passing the latest known version to `exact_version` to mean "give me the newest data" is a mistake: the request fails the moment any other write lands, because the projection has then moved past the requested version.
 
 ### fully_consistent (head of log)
 
 - **Guarantee**: the response reflects every event committed to the event log before the request arrived at the server. The server, not the client, determines that head position by observing the log at the moment the request arrives.
 - **Input**: none. A client that holds a version should use `min_version` instead; `fully_consistent` is for a client that has no version to offer.
-- **Waits**: yes, until the projection checkpoint reaches the head position observed at request arrival, bounded by `timeout_duration` and retried every `delay_duration`. Alternatively, when a query targets a single stream, the server may answer directly from that stream's current state instead of waiting on a projection.
+- **Waits**: yes, until a result reflecting a position at or past the head observed at request arrival is available, bounded by `timeout_duration` and retried every `delay_duration`. Alternatively, when a query targets a single stream, the server may answer directly from that stream's current state instead of waiting on a projection.
 - **Cache allowed**: no. Any result that may predate the request's arrival at the server must not be served.
 - **Output**: the result. The server should echo the head position it satisfied, so the caller can downgrade to `min_version` on a follow-up read instead of paying for `fully_consistent` again.
 - **Failure**: `UNAVAILABLE` if `timeout_duration` elapses. Servers may clamp `timeout_duration` tighter for this mode, and may rate limit it, because it is the most expensive mode to satisfy.
@@ -88,7 +107,7 @@ Setting `minimize_latency` explicitly behaves exactly like leaving `requirement`
 // Example mutation response
 message CreateOrderResponse {
   string order_id = 1;
-  uint64 stream_version = 2;  // Returns current event stream version
+  int64 version = 2;  // The counter the target projection checkpoints on
 }
 ```
 
