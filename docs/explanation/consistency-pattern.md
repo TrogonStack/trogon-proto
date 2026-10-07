@@ -153,21 +153,28 @@ For the waiting modes:
    - min_version: required = requested version
    - exact_version: required = requested version
    - fully_consistent: observe log head H at request arrival; required = H
-2. Execute query
-3. Check projection checkpoint against required
-4. If min_version or fully_consistent and checkpoint >= required -> return result
-5. If exact_version and checkpoint == required -> return result
-6. If exact_version and checkpoint > required -> return FAILED_PRECONDITION
+2. Execute the query and capture the position the result reflects.
+   The result and its position must come from the same projection snapshot
+   (for example, the same read transaction, or the same cached entry).
+3. Compare that result position, not a later checkpoint, with required.
+4. If min_version or fully_consistent and result position >= required -> return result
+5. If exact_version and result position == required -> return result
+6. If exact_version and result position > required -> return FAILED_PRECONDITION
 7. If timeout exceeded -> return UNAVAILABLE
 8. Sleep for delay_duration
 9. Goto step 2
 ```
 
+The position must be read together with the result. Reading the projection checkpoint after the query is a race: the projection can advance between the query and the checkpoint read, so a checkpoint that satisfies `required` says nothing about the rows that were returned. Under `exact_version` the same race can return rows from before the requested position while the checkpoint reads as equal to it. Every projection that supports a waiting mode therefore needs a way to return its position atomically with the query result.
+
 `minimize_latency` skips this loop entirely: it executes the query once against whatever the projection currently reflects and returns immediately.
 
 ### Special Case: NOT_FOUND Errors
 
-If a query returns `NOT_FOUND` under `min_version`, `exact_version`, or `fully_consistent` (the entity does not yet exist in the projection), treat it as projection lag and retry until timeout rather than failing immediately. The entity may appear once the projection catches up to the required position.
+Under `min_version`, `exact_version`, or `fully_consistent`, a `NOT_FOUND` result carries a position like any other result, and the same comparison applies to it:
+
+- If the result position is below `required`, the entity may not exist yet because of projection lag. Treat it as not satisfied and retry until timeout.
+- If the result position satisfies `required`, the entity genuinely does not exist at that position. Return `NOT_FOUND`. Retrying would only convert a correct answer into `UNAVAILABLE` after the timeout elapses.
 
 ## Observability
 
