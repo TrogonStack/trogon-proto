@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0](https://github.com/TrogonStack/trogon-proto/compare/v0.17.0...v0.18.0) (2026-10-07)
+
+
+### Features
+
+* **consistency:** Add minimize_latency and fully_consistent modes ([#63](https://github.com/TrogonStack/trogon-proto/issues/63)) ([0768ec5](https://github.com/TrogonStack/trogon-proto/commit/0768ec5038540a5f503b6f898ec70120fde81766))
+
 ## [0.17.0](https://github.com/TrogonStack/trogon-proto/compare/v0.16.0...v0.17.0) (2026-09-11)
 
 
